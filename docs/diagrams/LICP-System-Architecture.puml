@@ -1,0 +1,100 @@
+@startuml LICP_System_Architecture
+' Figure 9 — Three-tier system architecture (grayscale, SpotOn-style)
+
+scale 0.9
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam roundcorner 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+skinparam actor {
+  BackgroundColor white
+  BorderColor black
+}
+skinparam package {
+  BorderColor black
+  FontStyle bold
+}
+skinparam component {
+  BackgroundColor white
+  BorderColor black
+}
+skinparam database {
+  BackgroundColor white
+  BorderColor black
+}
+skinparam rectangle {
+  BorderColor black
+}
+skinparam note {
+  BackgroundColor white
+  BorderColor black
+}
+
+skinparam rectangle<<Frame>> {
+  BorderStyle dashed
+  BackgroundColor white
+}
+
+title System Architecture – Legal Intelligence and Compliance Platform (LICP)
+
+actor Admin
+actor "Compliance\nOfficer" as CO
+actor "Legal\nPractitioner" as LP
+actor Manager
+
+rectangle "LICP Platform" <<Frame>> {
+
+  package "Presentation Layer" #F0F0F0 {
+    rectangle "System Interactions" #F8F8F8 {
+      component "React Web Application\n(Vite + Tailwind CSS)\nPort 5173" as web
+    }
+  }
+
+  package "Application Layer" #E8E8E8 {
+    rectangle "Business Logic" #F5F5F5 {
+      component "User Management\nand Security" as mod1
+      component "Compliance and\nRegulatory" as mod2
+      component "Legal Knowledge\nand Contracts" as mod3
+      component "Notifications\nand Reporting" as mod4
+    }
+  }
+
+  package "Data Layer" #E0E0E0 {
+    database "PostgreSQL\nDatabase" as db
+    rectangle "Stored Data Types" #F5F5F5 {
+      component "User and\nSession Data" as d1
+      component "Compliance\nObligations" as d2
+      component "Contracts and\nDocuments" as d3
+      component "Audit Logs\nand Reports" as d4
+    }
+    note right of db
+      Database contents:
+      • User and session data
+      • Compliance obligations
+      • Regulatory updates
+      • Contracts and documents
+      • Audit logs and reports
+    end note
+  }
+}
+
+Admin -down-> web
+CO -down-> web
+LP -down-> web
+Manager -down-> web
+
+web -down-> mod1 : HTTPS / REST\n(JWT + MFA)
+mod1 -[hidden]right- mod2
+mod2 -[hidden]right- mod3
+mod3 -[hidden]right- mod4
+
+mod2 -down-> db : Read / Write Data\n(Prisma ORM)
+db -down-> d1
+d1 -[hidden]right- d2
+d2 -[hidden]right- d3
+d3 -[hidden]right- d4
+
+@enduml

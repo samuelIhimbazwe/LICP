@@ -1,0 +1,30 @@
+@startuml LICP_Sequence_Login_Simple
+scale 0.9
+skinparam shadowing false
+
+actor User
+participant UI
+participant API
+database DB
+
+User -> UI : Enter email + password
+UI -> API : POST /auth/login
+API -> DB : Find user
+DB --> API : User record
+
+alt Invalid login
+  API --> UI : Error 401
+else MFA required
+  API --> UI : Request MFA code
+  User -> UI : Enter MFA
+  UI -> API : POST /auth/mfa/verify
+  API -> DB : Validate + create session
+  API --> UI : JWT token
+else Login OK
+  API -> DB : Create session
+  API --> UI : JWT token
+end
+
+UI --> User : Open role dashboard
+
+@enduml

@@ -1,0 +1,72 @@
+@startuml LICP_Database_Schema
+' Figure 8 — Core database schema (5 tables, vertical)
+' Database: licp_db
+
+top to bottom direction
+scale 0.75
+skinparam shadowing false
+skinparam linetype ortho
+skinparam entity {
+  BackgroundColor #EEF2FF
+  BorderColor #4338CA
+}
+
+entity "organizations" as org {
+  * id : TEXT <<PK>>
+  --
+  name : TEXT
+  slug : TEXT <<UK>>
+  mfa_required : BOOLEAN
+}
+
+entity "users" as users {
+  * id : TEXT <<PK>>
+  --
+  organization_id : TEXT <<FK>>
+  email : TEXT
+  password_hash : TEXT
+  role : ENUM
+  status : ENUM
+}
+
+entity "regulatory_updates" as reg {
+  * id : TEXT <<PK>>
+  --
+  organization_id : TEXT <<FK>>
+  title : TEXT
+  impact : TEXT
+  status : ENUM
+  effective_date : DATETIME
+}
+
+entity "compliance_obligations" as obl {
+  * id : TEXT <<PK>>
+  --
+  organization_id : TEXT <<FK>>
+  regulatory_update_id : TEXT <<FK>>
+  title : TEXT
+  status : ENUM
+  deadline : DATETIME
+  assigned_to : TEXT
+}
+
+entity "compliance_evidence" as ev {
+  * id : TEXT <<PK>>
+  --
+  obligation_id : TEXT <<FK>>
+  file_name : TEXT
+  uploaded_by : TEXT
+  uploaded_at : DATETIME
+}
+
+org -[hidden]down-> users
+users -[hidden]down-> reg
+reg -[hidden]down-> obl
+obl -[hidden]down-> ev
+
+org ||--o{ users
+org ||--o{ reg
+reg ||--o{ obl
+obl ||--o{ ev
+
+@enduml

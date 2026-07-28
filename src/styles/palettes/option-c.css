@@ -1,0 +1,78 @@
+/* Option C — Global Enterprise (iManage / Relativity style: cool slate, corporate navy) */
+
+:root {
+  --background: #f4f6f8;
+  --foreground: #2d3748;
+  --card: #ffffff;
+  --card-foreground: #2d3748;
+  --popover: #ffffff;
+  --popover-foreground: #2d3748;
+
+  --brand: #3182ce;
+  --brand-foreground: #ffffff;
+
+  --primary: #1a365d;
+  --primary-foreground: #ffffff;
+  --secondary: #edf2f7;
+  --secondary-foreground: #2d3748;
+  --muted: #edf2f7;
+  --muted-foreground: #718096;
+  --accent: #ebf8ff;
+  --accent-foreground: #2d3748;
+  --destructive: #c53030;
+  --destructive-foreground: #ffffff;
+
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --input-background: #ffffff;
+  --switch-background: #cbd5e0;
+  --ring: #3182ce;
+
+  --chart-1: #1a365d;
+  --chart-2: #3182ce;
+  --chart-3: #718096;
+  --chart-4: #a0aec0;
+  --chart-5: #c53030;
+
+  --sidebar: #edf2f7;
+  --sidebar-foreground: #4a5568;
+  --sidebar-primary: #1a365d;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ebf8ff;
+  --sidebar-accent-foreground: #2d3748;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #3182ce;
+}
+
+.dark {
+  --background: #1a202c;
+  --foreground: #edf2f7;
+  --card: #2d3748;
+  --card-foreground: #edf2f7;
+  --popover: #2d3748;
+  --popover-foreground: #edf2f7;
+  --brand: #63b3ed;
+  --brand-foreground: #1a202c;
+  --primary: #4299e1;
+  --primary-foreground: #1a202c;
+  --secondary: #2d3748;
+  --secondary-foreground: #edf2f7;
+  --muted: #2d3748;
+  --muted-foreground: #a0aec0;
+  --accent: #2d3748;
+  --accent-foreground: #edf2f7;
+  --destructive: #fc8181;
+  --destructive-foreground: #1a202c;
+  --border: #4a5568;
+  --input: #4a5568;
+  --input-background: #2d3748;
+  --ring: #63b3ed;
+  --sidebar: #2d3748;
+  --sidebar-foreground: #a0aec0;
+  --sidebar-primary: #4299e1;
+  --sidebar-primary-foreground: #1a202c;
+  --sidebar-accent: #1a202c;
+  --sidebar-accent-foreground: #edf2f7;
+  --sidebar-border: #4a5568;
+  --sidebar-ring: #63b3ed;
+}

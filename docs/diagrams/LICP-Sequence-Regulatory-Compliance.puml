@@ -1,0 +1,22 @@
+@startuml LICP_Sequence_Compliance_Simple
+scale 0.9
+skinparam shadowing false
+
+actor Admin
+actor "Compliance\nOfficer" as CO
+participant API
+database DB
+
+Admin -> API : Sync regulatory feed
+API -> DB : Save RegulatoryUpdate
+
+CO -> API : Review update
+API -> DB : Mark reviewed
+
+CO -> API : Create obligation
+API -> DB : Save ComplianceObligation
+
+CO -> API : Upload evidence
+API -> DB : Save evidence + update status
+
+@enduml

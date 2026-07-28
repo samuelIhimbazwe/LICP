@@ -1,0 +1,22 @@
+@startuml LICP_Activity_Login_Simple
+scale 0.85
+skinparam shadowing false
+
+start
+:Admin sends invitation;
+:User sets password;
+:User logs in;
+
+if (Credentials valid?) then (no)
+  :Show error;
+  stop
+else (yes)
+  if (MFA required?) then (yes)
+    :Verify MFA code;
+  endif
+  :Create session;
+  :Open role dashboard;
+  stop
+endif
+
+@enduml

@@ -1,0 +1,78 @@
+/* Option A — Counsel Authority (navy ink, legal blue CTA, brass brand accents) */
+
+:root {
+  --background: #f5f3ef;
+  --foreground: #0c1b2a;
+  --card: #ffffff;
+  --card-foreground: #0c1b2a;
+  --popover: #ffffff;
+  --popover-foreground: #0c1b2a;
+
+  --brand: #a67c2e;
+  --brand-foreground: #f5f3ef;
+
+  --primary: #1e4d7b;
+  --primary-foreground: #ffffff;
+  --secondary: #ede8e0;
+  --secondary-foreground: #0c1b2a;
+  --muted: #ede8e0;
+  --muted-foreground: #5c6b7a;
+  --accent: #e8edf2;
+  --accent-foreground: #0c1b2a;
+  --destructive: #8a2727;
+  --destructive-foreground: #ffffff;
+
+  --border: #d8d2c8;
+  --input: #d8d2c8;
+  --input-background: #ffffff;
+  --switch-background: #c5bfb5;
+  --ring: #1e4d7b;
+
+  --chart-1: #1e4d7b;
+  --chart-2: #a67c2e;
+  --chart-3: #2f6e4f;
+  --chart-4: #5c6b7a;
+  --chart-5: #8a2727;
+
+  --sidebar: #ede8e0;
+  --sidebar-foreground: #3a4a5c;
+  --sidebar-primary: #1e4d7b;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e8edf2;
+  --sidebar-accent-foreground: #0c1b2a;
+  --sidebar-border: #d8d2c8;
+  --sidebar-ring: #1e4d7b;
+}
+
+.dark {
+  --background: #0c1b2a;
+  --foreground: #e8edf2;
+  --card: #132231;
+  --card-foreground: #e8edf2;
+  --popover: #132231;
+  --popover-foreground: #e8edf2;
+  --brand: #d4a84b;
+  --brand-foreground: #0c1b2a;
+  --primary: #4a8bc2;
+  --primary-foreground: #0c1b2a;
+  --secondary: #1a2d3f;
+  --secondary-foreground: #e8edf2;
+  --muted: #1a2d3f;
+  --muted-foreground: #8b98a8;
+  --accent: #1a2d3f;
+  --accent-foreground: #e8edf2;
+  --destructive: #c45c5c;
+  --destructive-foreground: #ffffff;
+  --border: #2a3f52;
+  --input: #2a3f52;
+  --input-background: #132231;
+  --ring: #4a8bc2;
+  --sidebar: #0f1f2e;
+  --sidebar-foreground: #8b98a8;
+  --sidebar-primary: #4a8bc2;
+  --sidebar-primary-foreground: #0c1b2a;
+  --sidebar-accent: #1a2d3f;
+  --sidebar-accent-foreground: #e8edf2;
+  --sidebar-border: #2a3f52;
+  --sidebar-ring: #4a8bc2;
+}

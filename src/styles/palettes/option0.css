@@ -1,0 +1,78 @@
+/* Option 0 — Original LICP palette (warm base, charcoal primary, muted gold brand) */
+
+:root {
+  --background: #faf9f7;
+  --foreground: #1a1a1a;
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+
+  --brand: #a68b67;
+  --brand-foreground: #faf9f7;
+
+  --primary: #1a1a1a;
+  --primary-foreground: #faf9f7;
+  --secondary: #f3ede6;
+  --secondary-foreground: #1a1a1a;
+  --muted: #f0ebe4;
+  --muted-foreground: #78716c;
+  --accent: #f0ebe4;
+  --accent-foreground: #1a1a1a;
+  --destructive: #b91c1c;
+  --destructive-foreground: #ffffff;
+
+  --border: #ebe4dc;
+  --input: #ebe4dc;
+  --input-background: #ffffff;
+  --switch-background: #d6cfc7;
+  --ring: #a68b67;
+
+  --chart-1: #1a1a1a;
+  --chart-2: #a68b67;
+  --chart-3: #78716c;
+  --chart-4: #c4b8ad;
+  --chart-5: #b91c1c;
+
+  --sidebar: #f7f4f0;
+  --sidebar-foreground: #57534e;
+  --sidebar-primary: #1a1a1a;
+  --sidebar-primary-foreground: #faf9f7;
+  --sidebar-accent: #f0ebe4;
+  --sidebar-accent-foreground: #1a1a1a;
+  --sidebar-border: #ebe4dc;
+  --sidebar-ring: #a68b67;
+}
+
+.dark {
+  --background: #14110f;
+  --foreground: #eee2d9;
+  --card: #1c1917;
+  --card-foreground: #eee2d9;
+  --popover: #1c1917;
+  --popover-foreground: #eee2d9;
+  --brand: #c4a882;
+  --brand-foreground: #1a1a1a;
+  --primary: #eee2d9;
+  --primary-foreground: #1a1a1a;
+  --secondary: #292524;
+  --secondary-foreground: #eee2d9;
+  --muted: #292524;
+  --muted-foreground: #a8a29e;
+  --accent: #292524;
+  --accent-foreground: #eee2d9;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #44403c;
+  --input: #44403c;
+  --input-background: #1c1917;
+  --ring: #c4a882;
+  --sidebar: #1c1917;
+  --sidebar-foreground: #a8a29e;
+  --sidebar-primary: #eee2d9;
+  --sidebar-primary-foreground: #1a1a1a;
+  --sidebar-accent: #292524;
+  --sidebar-accent-foreground: #eee2d9;
+  --sidebar-border: #44403c;
+  --sidebar-ring: #c4a882;
+}

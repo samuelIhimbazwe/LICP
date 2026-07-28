@@ -1,0 +1,49 @@
+@startuml LICP_DFD_Level0_Context
+' Figure 8(a) — DFD Level 0 (Context Diagram)
+
+scale 0.9
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam roundcorner 0
+skinparam linetype polyline
+
+skinparam rectangle {
+  BackgroundColor white
+  BorderColor black
+}
+skinparam usecase {
+  BackgroundColor white
+  BorderColor black
+}
+
+title DFD Level 0 (Context) — Legal Intelligence & Compliance Platform (LICP)
+
+rectangle "Administrator" as Admin
+rectangle "Compliance\nOfficer" as CO
+rectangle "Legal\nPractitioner" as LP
+rectangle "Manager" as Mgr
+rectangle "External\nRegulatory API" as RegAPI
+rectangle "External DMS /\nE-sign / ERP" as ExtSys
+
+usecase "0\nLICP" as P0
+
+Admin -down-> P0 : User invitation,\nrole assignment,\nintegration config
+P0 -up-> Admin : User status,\naudit exports,\nsystem alerts
+
+CO -right-> P0 : Obligation details,\nevidence files,\nreview notes
+P0 -left-> CO : Notifications,\ndashboards,\ncompliance status
+
+LP -down-> P0 : Contract metadata,\nknowledge queries,\nAI research prompts
+P0 -up-> LP : Search results,\ncontract versions,\nAI answers
+
+Mgr -left-> P0 : Report parameters,\ndashboard filters
+P0 -right-> Mgr : Reports,\nanalytics metrics,\nactivity feeds
+
+RegAPI -down-> P0 : New regulation feed,\nupdate metadata
+P0 -up-> RegAPI : Sync requests,\nAPI credentials (masked)
+
+ExtSys -down-> P0 : Document sync,\nsigned contract status,\norg structure
+P0 -up-> ExtSys : Webhook payloads,\nconnector sync jobs
+
+@enduml

@@ -1,0 +1,129 @@
+@startuml LICP_DFD_Level1
+' Figure 8(b) — DFD Level 1 (Decomposed Diagram)
+
+scale 0.75
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam roundcorner 0
+skinparam linetype ortho
+skinparam nodesep 40
+skinparam ranksep 35
+
+skinparam rectangle {
+  BackgroundColor white
+  BorderColor black
+}
+skinparam usecase {
+  BackgroundColor white
+  BorderColor black
+}
+skinparam storage {
+  BackgroundColor white
+  BorderColor black
+}
+
+title DFD Level 1 — Legal Intelligence & Compliance Platform (LICP)
+
+' --- External entities (left) ---
+rectangle "Administrator" as Admin
+rectangle "Compliance\nOfficer" as CO
+rectangle "Legal\nPractitioner" as LP
+rectangle "Manager" as Mgr
+rectangle "External\nRegulatory API" as RegAPI
+rectangle "External DMS /\nE-sign / ERP" as ExtSys
+
+' --- Processes (centre) ---
+usecase "P1\nAuthenticate &\nAuthorize Users" as P1
+usecase "P2\nManage Compliance\nObligations" as P2
+usecase "P3\nMonitor Regulatory\nUpdates" as P3
+usecase "P4\nManage Legal Knowledge\n& Contracts" as P4
+usecase "P5\nGenerate Analytics\n& Reports" as P5
+usecase "P6\nProcess AI\nLegal Queries" as P6
+usecase "P7\nSynchronize External\nIntegrations" as P7
+usecase "P8\nDispatch\nNotifications" as P8
+
+' --- Data stores (right) ---
+storage "D1\nUser &\nSession Store" as D1
+storage "D2\nCompliance &\nEvidence Store" as D2
+storage "D3\nRegulatory\nStore" as D3
+storage "D4\nKnowledge &\nContract Store" as D4
+storage "D5\nAnalytics &\nAudit Store" as D5
+storage "D6\nIntegration\nConfig Store" as D6
+
+' --- Entity → Process flows ---
+Admin --> P1 : Invitation,\nrole assignment
+Admin --> P7 : Connector config
+CO --> P2 : Obligation CRUD,\nevidence upload
+CO --> P3 : Review decision
+LP --> P4 : Document upload,\ncheckout/checkin
+LP --> P6 : Research query
+Mgr --> P5 : Report definition
+RegAPI --> P7 : Regulation feed
+ExtSys --> P7 : Document / org sync
+
+' --- Process → Entity flows ---
+P1 --> Admin : Session status
+P2 --> CO : Obligation status,\nescalation alert
+P3 --> CO : Reviewed regulation
+P4 --> LP : Search results,\nPDF export
+P5 --> Mgr : Dashboard metrics,\nreport file
+P6 --> LP : Cited answer,\nconfidence score
+P6 --> CO : Cited answer,\nconfidence score
+P8 --> CO : Notification
+P8 --> LP : Notification
+P8 --> Mgr : Notification
+P8 --> Admin : Notification
+
+' --- Process ↔ Data store ---
+P1 --> D1 : User / session records
+D1 --> P1 : Credentials, roles
+P2 --> D2 : Obligation, evidence
+D2 --> P2 : Status, assignments
+P3 --> D3 : Reviewed update
+D3 --> P3 : Pending regulations
+P4 --> D4 : Documents, contracts
+D4 --> P4 : Index, versions
+P5 --> D5 : Report snapshots
+D5 --> P5 : Aggregated metrics
+P6 --> D4 : RAG retrieval
+P6 --> D5 : Query log
+P7 --> D6 : Sync config, logs
+D6 --> P7 : Connector state
+P7 --> D3 : Imported regulations
+P8 --> D1 : User preferences
+P8 --> D5 : Activity feed
+
+' --- Inter-process flows ---
+P3 --> P2 : Obligation trigger
+P2 --> P8 : Alert rules / events
+P3 --> P8 : Regulatory event
+P2 --> P5 : Compliance metrics
+P4 --> P6 : Document context
+P1 --> D5 : Audit event
+
+' --- Layout hints ---
+Admin -[hidden]down- CO
+CO -[hidden]down- LP
+LP -[hidden]down- Mgr
+Mgr -[hidden]down- RegAPI
+RegAPI -[hidden]down- ExtSys
+
+P1 -[hidden]right- P2
+P2 -[hidden]right- P3
+P3 -[hidden]right- P4
+P4 -[hidden]right- P5
+P5 -[hidden]right- P6
+P6 -[hidden]right- P7
+P7 -[hidden]right- P8
+
+D1 -[hidden]down- D2
+D2 -[hidden]down- D3
+D3 -[hidden]down- D4
+D4 -[hidden]down- D5
+D5 -[hidden]down- D6
+
+Admin -[hidden]right- P1
+P8 -[hidden]right- D1
+
+@enduml

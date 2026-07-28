@@ -1,0 +1,66 @@
+@startuml LICP_Use_Case_Diagram
+' Figure 2 — Use Case Diagram (style-matched; access synced with LICP RBAC)
+
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+left to right direction
+
+actor "Administrator" as Admin
+actor "Compliance\nOfficer" as CO
+actor "Legal\nPractitioner" as LP
+actor "Manager" as Mgr
+
+rectangle "Legal Intelligence & Compliance Platform (LICP)" {
+  usecase "User & Access\nManagement" as UC1
+  usecase "Obligation &\nRegulatory Management" as UC2
+  usecase "Document &\nKnowledge Management" as UC3
+  usecase "AI Legal Query" as UC4
+  usecase "Contract Management" as UC5
+  usecase "Reporting &\nAnalytics" as UC6
+  usecase "Dashboard &\nNotifications" as UC7
+  usecase "Integrations &\nSecurity Audit" as UC8
+  usecase "System Configuration" as UC9
+}
+
+' Administrator — full access to all modules
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC4
+Admin --> UC5
+Admin --> UC6
+Admin --> UC7
+Admin --> UC8
+Admin --> UC9
+
+' Compliance Officer — all operational modules except user admin & system config
+CO --> UC2
+CO --> UC3
+CO --> UC4
+CO --> UC5
+CO --> UC6
+CO --> UC7
+CO --> UC8
+
+' Legal Practitioner — core legal/compliance work, dashboards, reports (view), no user/security/config admin
+LP --> UC2
+LP --> UC3
+LP --> UC4
+LP --> UC5
+LP --> UC6
+LP --> UC7
+
+' Manager — oversight across operations, analytics, limited integrations/security view; no system config
+Mgr --> UC2
+Mgr --> UC3
+Mgr --> UC4
+Mgr --> UC5
+Mgr --> UC6
+Mgr --> UC7
+Mgr --> UC8
+
+@enduml

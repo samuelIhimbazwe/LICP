@@ -1,0 +1,78 @@
+/* Option B — Modern Legal Tech (Harvey / Clio style: clean neutrals, vibrant blue, teal accent) */
+
+:root {
+  --background: #fafaf9;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+
+  --brand: #0d9488;
+  --brand-foreground: #ffffff;
+
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f4;
+  --secondary-foreground: #1c1917;
+  --muted: #f5f5f4;
+  --muted-foreground: #78716c;
+  --accent: #ecfdf5;
+  --accent-foreground: #1c1917;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  --border: #e7e5e4;
+  --input: #e7e5e4;
+  --input-background: #ffffff;
+  --switch-background: #d6d3d1;
+  --ring: #2563eb;
+
+  --chart-1: #2563eb;
+  --chart-2: #0d9488;
+  --chart-3: #78716c;
+  --chart-4: #a8a29e;
+  --chart-5: #dc2626;
+
+  --sidebar: #f5f5f4;
+  --sidebar-foreground: #57534e;
+  --sidebar-primary: #2563eb;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ecfdf5;
+  --sidebar-accent-foreground: #1c1917;
+  --sidebar-border: #e7e5e4;
+  --sidebar-ring: #2563eb;
+}
+
+.dark {
+  --background: #1c1917;
+  --foreground: #fafaf9;
+  --card: #292524;
+  --card-foreground: #fafaf9;
+  --popover: #292524;
+  --popover-foreground: #fafaf9;
+  --brand: #2dd4bf;
+  --brand-foreground: #1c1917;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #292524;
+  --secondary-foreground: #fafaf9;
+  --muted: #292524;
+  --muted-foreground: #a8a29e;
+  --accent: #292524;
+  --accent-foreground: #fafaf9;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #44403c;
+  --input: #44403c;
+  --input-background: #292524;
+  --ring: #3b82f6;
+  --sidebar: #292524;
+  --sidebar-foreground: #a8a29e;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1c1917;
+  --sidebar-accent-foreground: #fafaf9;
+  --sidebar-border: #44403c;
+  --sidebar-ring: #3b82f6;
+}

@@ -1,0 +1,24 @@
+@startuml LICP_Activity_Compliance_Simple
+scale 0.85
+skinparam shadowing false
+
+start
+:Sync regulatory updates;
+
+:Officer reviews update;
+
+if (Applicable?) then (no)
+  :Mark not applicable;
+  stop
+else (yes)
+  :Create obligation;
+  :Upload evidence;
+  if (Evidence complete?) then (no)
+    :Keep in progress;
+  else (yes)
+    :Close obligation;
+  endif
+  stop
+endif
+
+@enduml

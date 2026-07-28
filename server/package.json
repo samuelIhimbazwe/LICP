@@ -1,0 +1,51 @@
+{
+  "name": "@licp/server",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file=../.env --env-file=../.env.local src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "db:generate": "prisma generate --schema ../prisma/schema.prisma",
+    "db:generate:postgres": "prisma generate --schema ../prisma/schema.postgresql.prisma",
+    "db:migrate": "prisma migrate dev --schema ../prisma/schema.prisma",
+    "db:push": "prisma db push --schema ../prisma/schema.prisma",
+    "db:push:postgres": "prisma db push --schema ../prisma/schema.postgresql.prisma",
+    "db:seed": "tsx --env-file=../.env src/seed.ts",
+    "test:smoke": "tsx --env-file=../.env src/test/smoke-gates.ts",
+    "test:uploads": "tsx --env-file=../.env src/test/verify-uploads.ts",
+    "test:uat-a": "tsx --env-file=../.env src/test/uat-gate-a.ts",
+    "test:uat-b": "tsx --env-file=../.env src/test/uat-gate-b.ts",
+    "test:uat-c": "tsx --env-file=../.env src/test/uat-gate-c.ts",
+    "test:uat-d": "tsx --env-file=../.env src/test/uat-gate-d.ts",
+    "test:uat-e": "tsx --env-file=../.env src/test/uat-gate-e.ts",
+    "test:uat-f": "tsx --env-file=../.env src/test/uat-gate-f.ts",
+    "setup:email": "tsx --env-file=../.env src/scripts/setup-email.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^9.0.3",
+    "otplib": "^12.0.1",
+    "uuid": "^11.1.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.18",
+    "@types/express": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^22.15.21",
+    "@types/nodemailer": "^8.0.1",
+    "prisma": "^6.9.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,19 @@
+# Optional — for production-parity testing with PostgreSQL.
+# Local dev uses SQLite (see docs/GATE_A_SETUP.md); Docker is not required.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: licp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: licp
+      POSTGRES_PASSWORD: licp_dev_password
+      POSTGRES_DB: licp
+    ports:
+      - "5432:5432"
+    volumes:
+      - licp_pg_data:/volumes/postgres
+
+volumes:
+  licp_pg_data:

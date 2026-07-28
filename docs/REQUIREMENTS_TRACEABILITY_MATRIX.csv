@@ -1,0 +1,200 @@
+ID,Module,Type,Requirement,Screen Route,Backend API Requirement,Test Case Summary,Status,Build Phase,Gate
+M01-UI-001,M01 Auth,UI,"Registration for Legal Professionals and Business Users only; Admin creates accounts internally; no public registration","InviteUserDialog; /accept-invitation/:token; /set-password/:token","POST /invitations (admin only); no public POST /auth/register","Non-admin cannot self-register; admin invite creates pending user",PARTIAL,Phase A,Gate A
+M01-UI-002,M01 Auth,UI,"User fields: full name, email, phone, organization, role","AcceptInvitationPage; InviteUserDialog; ProfileSettings","users table; validation on create/update","All 5 fields captured validated and persisted on invite accept",PARTIAL,Phase A,Gate A
+M01-UI-003,M01 Auth,UI,Password creation with strength indicator,SetPasswordPage; ForgotPasswordPage,Password policy service; bcrypt/argon2 hash,Weak password rejected; strength bar updates live,PARTIAL,Phase A,Gate A
+M01-UI-004,M01 Auth,UI,Email verification interface,MISSING,POST /auth/verify-email; verification token; email service,User receives email; verify screen confirms; unverified user blocked,FAIL,Phase A,Gate A
+M01-UI-005,M01 Auth,UI,Login page with email and password,/login,POST /auth/login; rate limiting,Valid credentials proceed to MFA; invalid shows error,PARTIAL,Phase A,Gate A
+M01-UI-006,M01 Auth,UI,Password recovery/reset flow,/forgot-password,POST /auth/forgot-password; POST /auth/reset-password,Reset email sent; token link sets new password,PARTIAL,Phase A,Gate A
+M01-UI-007,M01 Auth,UI,Multi-factor authentication (mandatory),/verify-mfa; /setup-mfa/:token,POST /auth/mfa/verify; POST /auth/mfa/setup,Login blocked until MFA verified; skip not allowed,PARTIAL,Phase A,Gate A
+M01-UI-008,M01 Auth,UI,Session management and timeout controls,SystemSettings; AdminDashboard,Session store; idle timeout middleware; DELETE /auth/sessions/:id,Session expires after configured idle time; user redirected to login,FAIL,Phase A,Gate A
+M01-UI-009,M01 Auth,UI,Role-based dashboard redirection,/dashboard via DashboardLayout,JWT includes role; redirect logic,Each role lands on correct dashboard after login,PARTIAL,Phase A,Gate A
+M01-UI-010,M01 Auth,UI,Profile management screen,/profile-settings; /preferences,GET/PATCH /auth/me; PATCH /users/:id/profile,User edits profile; changes persist,PARTIAL,Phase A,Gate A
+M01-UI-011,M01 Auth,UI,Login attempt tracking,LoginPage; SecurityAudit,login_activity table; POST /auth/login logs attempts,Failed/successful logins visible in audit; lockout after max attempts,PARTIAL,Phase A,Gate A
+M01-FEAT-001,M01 Auth,Feature,Internal user accounts only (no public registration),N/A,Auth policy invite-only provisioning,Pen-test: no public signup endpoint,PARTIAL,Phase A,Gate A
+M01-FEAT-002,M01 Auth,Feature,"RBAC: Legal Practitioner Compliance Officer Manager Admin",All modules,RBAC middleware on all routes,User denied API/UI for unauthorized module,FAIL,Phase A,Gate A
+M01-FEAT-003,M01 Auth,Feature,Mandatory multi-factor authentication,N/A,Org policy mfa_required=true,Account without MFA cannot access system,PARTIAL,Phase A,Gate A
+M01-FEAT-004,M01 Auth,Feature,Organization/business affiliation tracking,Profile; invite forms,organizations table; users.organization_id FK,All users linked to org; reports filterable by org,PARTIAL,Phase A,Gate A
+M01-FEAT-005,M01 Auth,Feature,Session monitoring and timeout controls,UserManagement sessions tab,Active session registry; heartbeat; timeout job,Admin sees active sessions; idle user logged out,FAIL,Phase A,Gate A
+M01-FEAT-006,M01 Auth,Feature,Audit-ready user access tracking,SecurityAudit,Append-only audit_logs + login_activity,Every login/logout/permission change logged with IP timestamp,FAIL,Phase A,Gate A
+M02-UI-001,M02 Dashboard,UI,Role-based dashboard views,/dashboard,GET /dashboard aggregated metrics,4 distinct dashboards render per role,PARTIAL,Phase B,Gate B
+M02-UI-002,M02 Dashboard,UI,"CO dashboard: pending obligations upcoming deadlines regulatory alerts",ComplianceOfficerDashboard,GET /dashboard/compliance-officer,Cards show live counts from obligations and alerts,PARTIAL,Phase B,Gate B
+M02-UI-003,M02 Dashboard,UI,"LP dashboard: document requests case updates research tools",LegalPractitionerDashboard,GET /dashboard/legal-practitioner,All three sections populated with live data,PARTIAL,Phase B,Gate B
+M02-UI-004,M02 Dashboard,UI,"Manager dashboard: team activity compliance status audit readiness",ManagerDashboard,GET /dashboard/manager,Team activity feed and audit readiness score live,PARTIAL,Phase B,Gate B
+M02-UI-005,M02 Dashboard,UI,"Admin dashboard: system usage user statistics content updates",AdminDashboard,GET /dashboard/admin,User counts module usage recent content updates live,PARTIAL,Phase B,Gate B
+M02-UI-006,M02 Dashboard,UI,"Summary cards (active compliance new regulations pending reviews)",All dashboards,Aggregation queries across modules,Counts match source module data,PARTIAL,Phase B,Gate B
+M02-UI-007,M02 Dashboard,UI,Recent activity feed,All dashboards,GET /activity?limit=20,Feed updates when user performs actions,PARTIAL,Phase B,Gate B
+M02-UI-008,M02 Dashboard,UI,"Quick actions (search regulations upload document run compliance check)",Dashboard buttons,Deep links to M03 M06 M04/M08,Each button navigates and initiates correct action,PARTIAL,Phase B,Gate B
+M02-UI-009,M02 Dashboard,UI,Notification center with unread counts,Header; /notifications,GET /notifications/unread-count,Badge updates when notification read/created,PARTIAL,Phase B,Gate B
+M02-UI-010,M02 Dashboard,UI,System announcements,Dashboard; NotificationCenter,GET /notifications?type=announcement,Admin broadcast appears on dashboard,PARTIAL,Phase B,Gate B
+M02-UI-011,M02 Dashboard,UI,Compliance trend charts,CO/Manager dashboards,GET /analytics/compliance/trends,Chart data matches compliance module,PARTIAL,Phase B,Gate B
+M02-UI-012,M02 Dashboard,UI,Mobile-responsive dashboard layout,All dashboards,Responsive CSS,Usable on 375px viewport; no horizontal scroll,PARTIAL,Phase B,Gate B
+M02-FEAT-001,M02 Dashboard,Feature,Personalized dashboards,N/A,Role-scoped data queries,CO never sees admin-only metrics,PARTIAL,Phase B,Gate B
+M02-FEAT-002,M02 Dashboard,Feature,Real-time compliance and regulatory overview,N/A,WebSocket or polling,Dashboard updates within 30s of source change,FAIL,Phase B,Gate B
+M02-FEAT-003,M02 Dashboard,Feature,"Quick access to research document compliance tools",N/A,Navigation and pre-filled forms,Quick action completes intended workflow,PARTIAL,Phase B,Gate B
+M02-FEAT-004,M02 Dashboard,Feature,Notification integration for regulatory updates,N/A,Event regulatory_update.created to notification,New regulation triggers dashboard alert,FAIL,Phase B,Gate B
+M02-FEAT-005,M02 Dashboard,Feature,Visual representation of key metrics,N/A,Metrics aggregation service,Charts reflect accurate live data,PARTIAL,Phase B,Gate B
+M03-UI-001,M03 Knowledge Base,UI,Legal repository with search and filters,/knowledge-base,GET /documents?filters,List filters by type jurisdiction industry,PARTIAL,Phase D,Gate D
+M03-UI-002,M03 Knowledge Base,UI,"Document types: laws regulations case law templates guidance",/knowledge-base,legal_documents.type enum,All 5 types filterable and displayable,PARTIAL,Phase D,Gate D
+M03-UI-003,M03 Knowledge Base,UI,Jurisdiction and industry filtering,/knowledge-base,Indexed filter fields,Filter returns correct subset,PARTIAL,Phase D,Gate D
+M03-UI-004,M03 Knowledge Base,UI,Full-text search with highlighting,/knowledge-base,Search index with ts_headline highlighting,Search term highlighted in results and document body,FAIL,Phase D,Gate D
+M03-UI-005,M03 Knowledge Base,UI,Document version control (amended versions),/knowledge-base detail,document_versions table,User views version history of amended regulation,PARTIAL,Phase D,Gate D
+M03-UI-006,M03 Knowledge Base,UI,Annotations and bookmarking,/knowledge-base,POST annotations and bookmarks,Annotation saved and reloads on revisit,PARTIAL,Phase D,Gate D
+M03-UI-007,M03 Knowledge Base,UI,Citation and reference linking,/knowledge-base detail,Citation graph; linked document IDs,Clicking citation opens referenced document,PARTIAL,Phase D,Gate D
+M03-UI-008,M03 Knowledge Base,UI,Download PDF and print,/knowledge-base,GET /documents/:id/download,PDF downloads; print layout correct,PARTIAL,Phase D,Gate D
+M03-UI-009,M03 Knowledge Base,UI,Favorites and saved searches,/knowledge-base tabs,POST /saved-searches,Saved search re-runs with same filters,PARTIAL,Phase D,Gate D
+M03-UI-010,M03 Knowledge Base,UI,Admin upload and categorization,/knowledge-base upload,POST /documents admin; S3 storage,Admin uploads PDF; appears categorized,PARTIAL,Phase D,Gate D
+M03-FEAT-001,M03 Knowledge Base,Feature,Centralized legal knowledge base,N/A,Single document store per org,All legal content in one searchable repo,PARTIAL,Phase D,Gate D
+M03-FEAT-002,M03 Knowledge Base,Feature,Multi-jurisdiction and multi-industry content,N/A,Metadata on all documents,Content tagged Rwanda EAC finance labor etc,PARTIAL,Phase D,Gate D
+M03-FEAT-003,M03 Knowledge Base,Feature,Full-text search with advanced filters,N/A,Search index with combined filters,Query and filters return ranked results,FAIL,Phase D,Gate D
+M03-FEAT-004,M03 Knowledge Base,Feature,Version control for amended regulations,N/A,Version diff; effective dates,Amended law shows prior version history,PARTIAL,Phase D,Gate D
+M03-FEAT-005,M03 Knowledge Base,Feature,User annotations and bookmarks,N/A,Per-user persistence,Annotations survive logout/login,FAIL,Phase D,Gate D
+M03-FEAT-006,M03 Knowledge Base,Feature,Citation linking for research,N/A,Bidirectional citation links,Follow citation chain across documents,FAIL,Phase D,Gate D
+M03-FEAT-007,M03 Knowledge Base,Feature,Admin-managed content updates,N/A,Admin CRUD and audit log,Only admin can publish; change logged,FAIL,Phase D,Gate D
+M04-UI-001,M04 Compliance,UI,Compliance dashboard,/compliance-tracking,GET /compliance/metrics,Summary metrics at top of module,PARTIAL,Phase C,Gate C
+M04-UI-002,M04 Compliance,UI,Obligation library (requirements by regulation),/compliance-tracking,GET /obligations,Obligations listed with regulation reference,PARTIAL,Phase C,Gate C
+M04-UI-003,M04 Compliance,UI,Assignment to responsible persons/teams,/compliance-tracking,POST /obligations/:id/assign,Assign user/team; assignee sees obligation,PARTIAL,Phase C,Gate C
+M04-UI-004,M04 Compliance,UI,"Status: compliant partially compliant non-compliant",/compliance-tracking,PATCH /obligations/:id/status,All 3 statuses selectable and displayed,PARTIAL,Phase C,Gate C
+M04-UI-005,M04 Compliance,UI,Evidence upload,/compliance-tracking,POST /obligations/:id/evidence multipart,File uploads linked to obligation,PARTIAL,Phase C,Gate C
+M04-UI-006,M04 Compliance,UI,Audit trail for compliance actions,/compliance-tracking actions tab,GET /obligations/:id/actions,Every status change logged with user and timestamp,PARTIAL,Phase C,Gate C
+M04-UI-007,M04 Compliance,UI,Compliance calendar with deadlines,MISSING,GET /obligations/calendar,Calendar view shows obligations by due date,FAIL,Phase C,Gate C
+M04-UI-008,M04 Compliance,UI,Automated status calculation,/compliance-tracking,Status rules engine,Overdue with no evidence becomes non-compliant auto,FAIL,Phase C,Gate C
+M04-UI-009,M04 Compliance,UI,Compliance heat map (department regulation),/compliance-tracking,GET /compliance/heatmap,Heat map reflects live obligation data,PARTIAL,Phase C,Gate C
+M04-UI-010,M04 Compliance,UI,Export compliance reports,/compliance-tracking,POST /reports/compliance/export,PDF/Excel downloads with obligation data,FAIL,Phase C,Gate C
+M04-FEAT-001,M04 Compliance,Feature,Structured obligation management,N/A,CRUD and regulation FK,Create/edit/delete obligations persist,PARTIAL,Phase C,Gate C
+M04-FEAT-002,M04 Compliance,Feature,Assignment of responsibilities,N/A,Assignment notifications,Assignee notified on assignment,FAIL,Phase C,Gate C
+M04-FEAT-003,M04 Compliance,Feature,Status tracking with evidence upload,N/A,Evidence required for compliant status,Cannot mark compliant without evidence,FAIL,Phase C,Gate C
+M04-FEAT-004,M04 Compliance,Feature,Automated deadline calendar,N/A,Cron deadline reminders,Calendar auto-populated from obligation dates,FAIL,Phase C,Gate C
+M04-FEAT-005,M04 Compliance,Feature,Audit trail for compliance activities,N/A,Append-only compliance_actions,Auditor can reconstruct full history,FAIL,Phase C,Gate C
+M04-FEAT-006,M04 Compliance,Feature,Heat map for visual risk identification,N/A,Aggregation by dept and regulation,Colors match risk levels accurately,PARTIAL,Phase C,Gate C
+M04-FEAT-007,M04 Compliance,Feature,Report generation for audits,N/A,Report builder and export,Audit report includes obligations and evidence,FAIL,Phase C,Gate C
+M05-UI-001,M05 Regulatory,UI,Regulatory feed (auto-fetched or manually entered),/regulatory-updates,GET /regulatory-updates; sync job,Feed shows manual and API-sourced updates,PARTIAL,Phase C,Gate C
+M05-UI-002,M05 Regulatory,UI,"Alert categories: new law amendment repeal guidance",/regulatory-updates,category enum filter,All 4 categories filterable,PARTIAL,Phase C,Gate C
+M05-UI-003,M05 Regulatory,UI,Jurisdiction and topic filters,/regulatory-updates,Filter API,Filters return correct updates,PARTIAL,Phase C,Gate C
+M05-UI-004,M05 Regulatory,UI,Impact assessment form,/regulatory-updates review,POST /regulatory-updates/:id/impact,CO submits impact; saved and viewable,PARTIAL,Phase C,Gate C
+M05-UI-005,M05 Regulatory,UI,"Status: reviewed action required implemented",/regulatory-updates,PATCH /regulatory-updates/:id/status,Status workflow enforced,PARTIAL,Phase C,Gate C
+M05-UI-006,M05 Regulatory,UI,Email/SMS alerts for subscribed topics,Subscription settings,PUT subscriptions; email/SMS service,Subscriber receives alert on matching update,FAIL,Phase C,Gate C
+M05-UI-007,M05 Regulatory,UI,Update history log,/regulatory-updates,GET /regulatory-updates/:id/history,Immutable log of all changes to update,FAIL,Phase C,Gate C
+M05-UI-008,M05 Regulatory,UI,Integration with knowledge base,/regulatory-updates,related_document_id FK,Link regulation update to KB document,PARTIAL,Phase C,Gate C
+M05-FEAT-001,M05 Regulatory,Feature,Automated regulatory monitoring (manual or API),N/A,Integration sync and manual CRUD,New gazette entry appears in feed,FAIL,Phase C,Gate C
+M05-FEAT-002,M05 Regulatory,Feature,Categorized alerts with impact assessment,N/A,Category and impact on create,High-impact update flagged,PARTIAL,Phase C,Gate C
+M05-FEAT-003,M05 Regulatory,Feature,Status tracking per update,N/A,State machine,Invalid status transitions rejected,PARTIAL,Phase C,Gate C
+M05-FEAT-004,M05 Regulatory,Feature,User subscription by jurisdiction/topic,N/A,update_subscriptions table,User subscribes and gets only matching alerts,PARTIAL,Phase C,Gate C
+M05-FEAT-005,M05 Regulatory,Feature,Email/SMS for critical changes,N/A,Notification service priority routing,Critical update triggers SMS within 5 min,FAIL,Phase C,Gate C
+M05-FEAT-006,M05 Regulatory,Feature,Integration with legal knowledge base,N/A,Auto-create or link KB doc on implement,Implemented update linked to KB entry,FAIL,Phase C,Gate C
+M06-UI-001,M06 Contracts,UI,Document library with folders,/contracts,GET /folders; GET /contracts,Folder tree navigable,PARTIAL,Phase D,Gate D
+M06-UI-002,M06 Contracts,UI,"Contract templates (NDA service employment)",/contracts templates,GET /contracts/templates,Templates usable to create new doc,PARTIAL,Phase D,Gate D
+M06-UI-003,M06 Contracts,UI,Document upload drag-and-drop,/contracts,POST /contracts multipart,Drag file uploads and appears in library,PARTIAL,Phase D,Gate D
+M06-UI-004,M06 Contracts,UI,"Metadata tagging (counterparty date value status)",/contracts,Contract metadata fields,All metadata saved and searchable,PARTIAL,Phase D,Gate D
+M06-UI-005,M06 Contracts,UI,Version control and check-in/out,/contracts,POST checkout/checkin; document_versions,Checked-out doc locked; checkin creates version,PARTIAL,Phase D,Gate D
+M06-UI-006,M06 Contracts,UI,Document approval workflow,/contracts,POST /contracts/:id/approve,Multi-step approval completes or rejects,PARTIAL,Phase D,Gate D
+M06-UI-007,M06 Contracts,UI,Expiry and renewal tracking,/contracts expiry tab,GET /contracts/expiring,Expiring contracts listed with countdown,PARTIAL,Phase D,Gate D
+M06-UI-008,M06 Contracts,UI,Full-text search within documents,/contracts,Document content index,Search finds text inside PDF/DOCX,FAIL,Phase D,Gate D
+M06-UI-009,M06 Contracts,UI,Sharing internal/external permission-based,/contracts share,POST /contracts/:id/share,Share with view/edit; external link expires,PARTIAL,Phase D,Gate D
+M06-UI-010,M06 Contracts,UI,E-signature integration (optional),/integrations e-sign,DocuSign API via M11,Send for signature; status updates on sign,PARTIAL,Phase D,Gate D
+M06-FEAT-001,M06 Contracts,Feature,Legal document and contract management,N/A,Full CRUD and storage,Documents persist across sessions,PARTIAL,Phase D,Gate D
+M06-FEAT-002,M06 Contracts,Feature,Template library,N/A,Template to new document copy,Create contract from NDA template,PARTIAL,Phase D,Gate D
+M06-FEAT-003,M06 Contracts,Feature,Version control and approval workflows,N/A,Version chain and approval state machine,Approved doc cannot edit without new version,FAIL,Phase D,Gate D
+M06-FEAT-004,M06 Contracts,Feature,Expiry/renewal tracking with alerts,N/A,Cron and M07 notifications,Alert 30 days before expiry,FAIL,Phase D,Gate D
+M06-FEAT-005,M06 Contracts,Feature,Secure sharing with permission control,N/A,Tokenized external links; RBAC,External user view-only no edit,FAIL,Phase D,Gate D
+M06-FEAT-006,M06 Contracts,Feature,Full-text search across documents,N/A,Content extraction and index,Search returns in-document matches,FAIL,Phase D,Gate D
+M07-UI-001,M07 Notifications,UI,Notification center with unread counts,/notifications; Header,GET /notifications; unread count,Unread count accurate; decrements on read,PARTIAL,Phase B,Gate B
+M07-UI-002,M07 Notifications,UI,Real-time alert pop-ups,MISSING,WebSocket/SSE notification.push,Pop-up appears without page refresh,FAIL,Phase B,Gate B
+M07-UI-003,M07 Notifications,UI,Regulatory update alerts by jurisdiction/topic,/notifications,Filtered by subscription,User sees only subscribed alerts,PARTIAL,Phase B,Gate B
+M07-UI-004,M07 Notifications,UI,Compliance deadline reminders,/notifications,Scheduled reminder job,Reminder 7 days before deadline,PARTIAL,Phase B,Gate B
+M07-UI-005,M07 Notifications,UI,Document approval requests,/notifications,Event approval.requested,Approver receives in-app notification,PARTIAL,Phase B,Gate B
+M07-UI-006,M07 Notifications,UI,Contract expiry alerts,/notifications,Event contract.expiring,Expiry alert with document link,PARTIAL,Phase B,Gate B
+M07-UI-007,M07 Notifications,UI,Broadcast message composer Admin,/notifications broadcast,POST /notifications/broadcast,Admin message reaches targeted users,PARTIAL,Phase B,Gate B
+M07-UI-008,M07 Notifications,UI,Notification preferences email SMS in-app,/profile-settings; /preferences,PUT /notifications/preferences,User disables email; no email sent,PARTIAL,Phase B,Gate B
+M07-UI-009,M07 Notifications,UI,Alert history log,/notifications,GET /notifications/logs,Full delivery history per notification,FAIL,Phase B,Gate B
+M07-UI-010,M07 Notifications,UI,Escalation for critical compliance items,/notifications or settings,escalation_rules engine,Overdue critical item escalates to manager,FAIL,Phase B,Gate B
+M07-FEAT-001,M07 Notifications,Feature,Multi-channel in-app email SMS,N/A,Email and SMS services,Same alert on enabled channels,FAIL,Phase B,Gate B
+M07-FEAT-002,M07 Notifications,Feature,Regulatory and compliance deadline alerts,N/A,Event-driven notification service,Alerts fire on regulation and deadline,FAIL,Phase B,Gate B
+M07-FEAT-003,M07 Notifications,Feature,Document and contract workflow notifications,N/A,Workflow event hooks,Approval and expiry events notify correctly,FAIL,Phase B,Gate B
+M07-FEAT-004,M07 Notifications,Feature,Broadcast for org announcements,N/A,Bulk notification dispatch,100 users receive broadcast within 1 min,FAIL,Phase B,Gate B
+M07-FEAT-005,M07 Notifications,Feature,Configurable notification preferences,N/A,Per-user channel prefs respected,SMS off means no SMS,FAIL,Phase B,Gate B
+M07-FEAT-006,M07 Notifications,Feature,Escalation for critical deadlines,N/A,Escalation rule engine and cron,Day 3 overdue notifies manager,FAIL,Phase B,Gate B
+M08-UI-001,M08 AI,UI,Legal research assistant chat/query,/ai-intelligence,POST /ai/query; LLM and RAG,Query returns answer in under 30s,PARTIAL,Phase F,Gate F
+M08-UI-002,M08 AI,UI,Natural language query,/ai-intelligence research tab,NL query parser,Rwanda data protection query returns relevant answer,PARTIAL,Phase F,Gate F
+M08-UI-003,M08 AI,UI,AI-generated summary of laws and obligations,/ai-intelligence,RAG over M03 and M04,Summary cites real KB documents,PARTIAL,Phase F,Gate F
+M08-UI-004,M08 AI,UI,Risk assessment for proposed actions,/ai-intelligence risk tab,POST /ai/risk-assessment,Risk score and factors displayed,PARTIAL,Phase F,Gate F
+M08-UI-005,M08 AI,UI,Contract clause analysis,/ai-intelligence clause tab,POST /ai/clause-analysis,Risky terms identified with locations,PARTIAL,Phase F,Gate F
+M08-UI-006,M08 AI,UI,Document comparison redline,/ai-intelligence compare tab,POST /ai/document-compare,Side-by-side redline of differences,PARTIAL,Phase F,Gate F
+M08-UI-007,M08 AI,UI,Confidence score and sources cited,/ai-intelligence,Response includes score and citations,Every answer shows score and at least 1 source,PARTIAL,Phase F,Gate F
+M08-UI-008,M08 AI,UI,Feedback helpful/not helpful,/ai-intelligence,POST /ai/feedback,Feedback button records response,PARTIAL,Phase F,Gate F
+M08-FEAT-001,M08 AI,Feature,AI-powered legal research and analysis,N/A,LLM service with RAG,Answer grounded in org KB,FAIL,Phase F,Gate F
+M08-FEAT-002,M08 AI,Feature,Natural language query interface,N/A,Query retrieval generation,NL query understood correctly,FAIL,Phase F,Gate F
+M08-FEAT-003,M08 AI,Feature,Regulatory obligation summaries,N/A,RAG includes obligation data,Summary lists applicable obligations,FAIL,Phase F,Gate F
+M08-FEAT-004,M08 AI,Feature,Contract clause risk assessment,N/A,Clause analysis model,Risky non-compliant clauses flagged,FAIL,Phase F,Gate F
+M08-FEAT-005,M08 AI,Feature,Document comparison redline,N/A,Diff engine on document text,Accurate added removed modified,FAIL,Phase F,Gate F
+M08-FEAT-006,M08 AI,Feature,Transparent sources and confidence scores,N/A,Citation extraction mandatory,No answer without sources,FAIL,Phase F,Gate F
+M08-FEAT-007,M08 AI,Feature,Continuous learning from feedback,N/A,Feedback stored; tuning pipeline,Negative feedback reduces repeat errors,FAIL,Phase F,Gate F
+M09-UI-001,M09 Analytics,UI,Compliance analytics dashboard,/analytics,GET /analytics/compliance,Live metrics from M04,PARTIAL,Phase E,Gate E
+M09-UI-002,M09 Analytics,UI,Obligation completion rates,/analytics,Completion rate query,Rate matches M04 completed/total,PARTIAL,Phase E,Gate E
+M09-UI-003,M09 Analytics,UI,Regulatory update impact trends,/analytics,GET /analytics/regulatory/trends,Trend chart from M05 data,PARTIAL,Phase E,Gate E
+M09-UI-004,M09 Analytics,UI,Document processing metrics,/analytics,GET /analytics/documents,Metrics from M06,PARTIAL,Phase E,Gate E
+M09-UI-005,M09 Analytics,UI,Team performance reports,/analytics,GET /analytics/team,Per-user task completion metrics,PARTIAL,Phase E,Gate E
+M09-UI-006,M09 Analytics,UI,Custom report builder interface,/analytics builder,POST /reports,User builds report from sections,PARTIAL,Phase E,Gate E
+M09-UI-007,M09 Analytics,UI,Report preview and export PDF Excel,/analytics,POST /reports/:id/generate,Downloadable PDF and XLSX files,FAIL,Phase E,Gate E
+M09-UI-008,M09 Analytics,UI,Scheduled report configuration,/analytics schedule,POST /reports/:id/schedule,Report runs on schedule; email sent,PARTIAL,Phase E,Gate E
+M09-UI-009,M09 Analytics,UI,Executive summary generator,/analytics executive,GET /analytics/executive-summary,One-page summary with key metrics,PARTIAL,Phase E,Gate E
+M09-UI-010,M09 Analytics,UI,Audit readiness reports,/analytics audit,GET /analytics/audit-readiness,Gaps and readiness score displayed,PARTIAL,Phase E,Gate E
+M09-FEAT-001,M09 Analytics,Feature,Comprehensive compliance/legal analytics,N/A,Aggregation jobs across modules,All metrics from real data,FAIL,Phase E,Gate E
+M09-FEAT-002,M09 Analytics,Feature,Obligation completion and trend tracking,N/A,Time-series obligation data,Monthly trend accurate,FAIL,Phase E,Gate E
+M09-FEAT-003,M09 Analytics,Feature,Regulatory update impact measurement,N/A,Impact data from M05,Impact trends reflect assessments,FAIL,Phase E,Gate E
+M09-FEAT-004,M09 Analytics,Feature,Team and document performance metrics,N/A,Cross-module metrics,Team metrics match assignments,FAIL,Phase E,Gate E
+M09-FEAT-005,M09 Analytics,Feature,Customizable report generation,N/A,Report engine PDF/Excel,Custom report exports correctly,FAIL,Phase E,Gate E
+M09-FEAT-006,M09 Analytics,Feature,Scheduled automated reporting,N/A,Cron job runner,Weekly report emailed to recipients,FAIL,Phase E,Gate E
+M09-FEAT-007,M09 Analytics,Feature,Executive summaries for management,N/A,Auto-generated summary job,Manager receives accurate summary,FAIL,Phase E,Gate E
+M10-UI-001,M10 User Mgmt,UI,User management console Admin only,/user-management,Admin-only route guard,Non-admin gets 403,PARTIAL,Phase E,Gate E
+M10-UI-002,M10 User Mgmt,UI,Role and permission assignment,/user-management,PUT /users/:id/permissions,Permissions saved and enforced,PARTIAL,Phase E,Gate E
+M10-UI-003,M10 User Mgmt,UI,Organization/business unit structure,/user-management org tab,GET/POST /organization/units,Org tree CRUD works,PARTIAL,Phase E,Gate E
+M10-UI-004,M10 User Mgmt,UI,User activity monitoring,/user-management activity,GET /users/:id/activity,Activity log shows real actions,PARTIAL,Phase E,Gate E
+M10-UI-005,M10 User Mgmt,UI,Account status active suspended,/user-management,PATCH /users/:id/status,Suspended user cannot login,PARTIAL,Phase E,Gate E
+M10-UI-006,M10 User Mgmt,UI,Bulk user import/export,/user-management,POST bulk-import; export endpoint,CSV import creates users; export downloads,PARTIAL,Phase E,Gate E
+M10-UI-007,M10 User Mgmt,UI,Access request workflow,/user-management requests,POST/PATCH /access-requests,Request approve grants permissions,PARTIAL,Phase E,Gate E
+M10-UI-008,M10 User Mgmt,UI,Permission matrix editor,/user-management matrix,PUT /roles/:id/permissions,Matrix changes affect role users,PARTIAL,Phase E,Gate E
+M10-UI-009,M10 User Mgmt,UI,Session management overview,/user-management sessions,GET /users/sessions,Admin sees and can revoke sessions,PARTIAL,Phase E,Gate E
+M10-UI-010,M10 User Mgmt,UI,User audit trail viewer,/user-management audit,GET /audit/logs?userId=,Per-user audit history filterable,PARTIAL,Phase E,Gate E
+M10-FEAT-001,M10 User Mgmt,Feature,Comprehensive user administration Admins only,N/A,Admin RBAC on all user APIs,Only admin can create/suspend users,FAIL,Phase E,Gate E
+M10-FEAT-002,M10 User Mgmt,Feature,RBAC with granular permissions,N/A,Permission middleware per action,CO cannot access user management API,FAIL,Phase E,Gate E
+M10-FEAT-003,M10 User Mgmt,Feature,Organizational hierarchy support,N/A,Nested org units,Users belong to dept; reports roll up,PARTIAL,Phase E,Gate E
+M10-FEAT-004,M10 User Mgmt,Feature,User activity monitoring for security,N/A,Activity logged on every action,Suspicious activity visible to admin,FAIL,Phase E,Gate E
+M10-FEAT-005,M10 User Mgmt,Feature,Account suspension/activation workflow,N/A,Status check on login,Suspended user rejected at login,FAIL,Phase E,Gate E
+M10-FEAT-006,M10 User Mgmt,Feature,Bulk user import for businesses,N/A,CSV parser validation rollback,50-user import succeeds with error report,FAIL,Phase E,Gate E
+M11-UI-001,M11 Integrations,UI,Integration configuration dashboard,/integrations,GET /integrations,All integrations listed with status,PARTIAL,Phase F,Gate F
+M11-UI-002,M11 Integrations,UI,Regulatory API Rwanda Gazette ORINFOR,/integrations regulatory,Connector and sync endpoint,Sync pulls regulations into M05,PARTIAL,Phase F,Gate F
+M11-UI-003,M11 Integrations,UI,E-signature DocuSign etc,/integrations e-sign,E-sign provider API,Send document for signature,PARTIAL,Phase F,Gate F
+M11-UI-004,M11 Integrations,UI,DMS SharePoint Google Drive,/integrations DMS,OAuth and file sync,Files sync to M06 library,PARTIAL,Phase F,Gate F
+M11-UI-005,M11 Integrations,UI,ERP/HRIS for compliance assignments,/integrations ERP,HRIS user/dept sync,Departments sync to M10 org,PARTIAL,Phase F,Gate F
+M11-UI-006,M11 Integrations,UI,API key management,/integrations keys,POST/DELETE /api-keys,Create rotate revoke API keys,PARTIAL,Phase F,Gate F
+M11-UI-007,M11 Integrations,UI,Integration status monitoring,/integrations health,GET /integrations/:id/health,Live health metrics displayed,PARTIAL,Phase F,Gate F
+M11-UI-008,M11 Integrations,UI,Sync schedule configuration,/integrations schedule,PUT /integrations/:id/schedule,Schedule saved; sync runs on time,PARTIAL,Phase F,Gate F
+M11-UI-009,M11 Integrations,UI,Error log and resolution,/integrations logs,GET /integrations/:id/logs,Errors logged with details,PARTIAL,Phase F,Gate F
+M11-UI-010,M11 Integrations,UI,Test connection interface,/integrations,POST /integrations/:id/test,Test returns pass/fail with message,PARTIAL,Phase F,Gate F
+M11-FEAT-001,M11 Integrations,Feature,Seamless external system integration,N/A,Integration adapter framework,At least 1 integration end-to-end,FAIL,Phase F,Gate F
+M11-FEAT-002,M11 Integrations,Feature,Regulatory API for automatic updates,N/A,Rwanda Gazette/ORINFOR connector,New gazette auto-creates M05 update,FAIL,Phase F,Gate F
+M11-FEAT-003,M11 Integrations,Feature,E-signature for contracts,N/A,DocuSign webhook,Signed doc status updates in M06,FAIL,Phase F,Gate F
+M11-FEAT-004,M11 Integrations,Feature,DMS connectors,N/A,SharePoint/Drive OAuth sync,File appears in contract library,FAIL,Phase F,Gate F
+M11-FEAT-005,M11 Integrations,Feature,ERP/HRIS for compliance role assignments,N/A,User/dept sync job,HRIS dept maps to obligation assignees,FAIL,Phase F,Gate F
+M11-FEAT-006,M11 Integrations,Feature,Integration health monitoring,N/A,Health check cron and alerting,Down integration triggers admin alert,FAIL,Phase F,Gate F
+M12-UI-001,M12 Security,UI,Role-based permission matrix,/security permissions,GET /security/permissions,Matrix matches enforced permissions,PARTIAL,Phase A,Gate A
+M12-UI-002,M12 Security,UI,Data encryption status indicators,/security encryption,Encryption config service,Indicators reflect actual encryption state,PARTIAL,Phase A,Gate A
+M12-UI-003,M12 Security,UI,Two-factor authentication settings,/security MFA,MFA policy API,Org/user MFA settings configurable,PARTIAL,Phase A,Gate A
+M12-UI-004,M12 Security,UI,Login activity monitoring,/security login,GET /audit/login-activity,All logins listed with IP device,PARTIAL,Phase A,Gate A
+M12-UI-005,M12 Security,UI,Comprehensive audit log viewer,/security audit,GET /audit/logs paginated,All actions searchable and filterable,PARTIAL,Phase A,Gate A
+M12-UI-006,M12 Security,UI,User action timeline with filters,/security timeline,Filtered audit query,Filter by user action date range,PARTIAL,Phase A,Gate A
+M12-UI-007,M12 Security,UI,Document access and modification logs,/security document logs,GET /audit/document-access,View download edit logged per document,PARTIAL,Phase A,Gate A
+M12-UI-008,M12 Security,UI,Compliance action audit trail,/security compliance audit,GET /audit/compliance-actions,All M04 actions in audit view,PARTIAL,Phase A,Gate A
+M12-UI-009,M12 Security,UI,Regulatory update review logs,/security regulatory audit,GET /audit/regulatory-reviews,All M05 reviews logged,PARTIAL,Phase A,Gate A
+M12-UI-010,M12 Security,UI,Export audit trail function,/security,GET /audit/logs/export,CSV/PDF export downloads,FAIL,Phase A,Gate A
+M12-UI-011,M12 Security,UI,Anomaly detection alerts,/security anomalies,GET /security/anomalies,Anomalies listed with severity,PARTIAL,Phase A,Gate A
+M12-UI-012,M12 Security,UI,Data retention policy configuration,/security retention,PUT /security/retention-policies,Policies saved and enforceable,PARTIAL,Phase A,Gate A
+M12-FEAT-001,M12 Security,Feature,Granular role-based access control,N/A,RBAC on every API endpoint,Unauthorized API returns 403,FAIL,Phase A,Gate A
+M12-FEAT-002,M12 Security,Feature,Data encryption for sensitive data,N/A,AES-256 at rest; TLS in transit,Evidence files encrypted in storage,FAIL,Phase A,Gate A
+M12-FEAT-003,M12 Security,Feature,Mandatory multi-factor authentication,N/A,Enforced org-wide,No MFA bypass possible,FAIL,Phase A,Gate A
+M12-FEAT-004,M12 Security,Feature,Complete tracking of all system activities,N/A,Audit middleware on all mutations,Every create/update/delete logged,FAIL,Phase A,Gate A
+M12-FEAT-005,M12 Security,Feature,Document and compliance action audit trail,N/A,Domain event to audit log,Auditor reconstructs document history,FAIL,Phase A,Gate A
+M12-FEAT-006,M12 Security,Feature,Regulatory update review documentation,N/A,Review event to immutable log,Review cannot be deleted,FAIL,Phase A,Gate A
+M12-FEAT-007,M12 Security,Feature,Security incident detection,N/A,Incident creation from anomalies,Anomaly escalates to incident record,FAIL,Phase A,Gate A
+M12-FEAT-008,M12 Security,Feature,Legal data protection compliance,N/A,Retention encryption access controls,Data handling meets policy config,FAIL,Phase A,Gate A
+M12-FEAT-009,M12 Security,Feature,Real-time anomaly detection,N/A,Rule engine on login/access patterns,Unusual login triggers alert within 1 min,FAIL,Phase A,Gate A

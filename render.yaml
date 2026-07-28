@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: licp
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci && npm ci --prefix server --include=dev && npx prisma generate --schema prisma/schema.postgresql.prisma && npm run build && npm run build --prefix server
+    startCommand: node scripts/start-prod.mjs
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ENABLE_DEV_AUTH_HELPERS
+        value: "true"
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_PENDING_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: EMAIL_FROM
+        value: LICP <noreply@licp.local>

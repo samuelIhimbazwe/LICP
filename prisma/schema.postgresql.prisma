@@ -1,0 +1,876 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../server/node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  legal_practitioner
+  compliance_officer
+  manager
+  admin
+}
+
+enum AccountStatus {
+  active
+  suspended
+  pending
+  deactivated
+}
+
+enum InvitationStatus {
+  pending
+  accepted
+  expired
+}
+
+enum AuditSeverity {
+  info
+  warning
+  critical
+}
+
+model Organization {
+  id                   String   @id @default(uuid())
+  name                 String
+  slug                 String   @unique
+  sessionTimeoutMinutes Int     @default(30)
+  maxLoginAttempts     Int      @default(5)
+  lockoutMinutes       Int      @default(5)
+  mfaRequired          Boolean  @default(true)
+  settings             Json?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  users       User[]
+  invitations Invitation[]
+  auditLogs   AuditLog[]
+  complianceObligations ComplianceObligation[]
+  regulatoryUpdates     RegulatoryUpdate[]
+  documentRequests      DocumentRequest[]
+  notifications         Notification[]
+  activityItems         ActivityItem[]
+  complianceEvidence    ComplianceEvidence[]
+  legalDocuments        LegalDocument[]
+  contractFolders       ContractFolder[]
+  contracts             Contract[]
+  customReports         CustomReport[]
+  scheduledReports      ScheduledReport[]
+  generatedReports      GeneratedReport[]
+  accessRequests        AccessRequest[]
+  bulkImportJobs        BulkImportJob[]
+  documentBookmarks     DocumentBookmark[]
+  savedSearches         SavedSearch[]
+  contractApprovals     ContractApproval[]
+  integrations          Integration[]
+  apiKeys               ApiKey[]
+  aiQueryLogs           AiQueryLog[]
+  escalationRules       EscalationRule[]
+  broadcasts            Broadcast[]
+  notificationDeliveryLogs NotificationDeliveryLog[]
+  contractTemplates     ContractTemplate[]
+  contractShares        ContractShare[]
+  documentAnnotations   DocumentAnnotation[]
+}
+
+model User {
+  id                  String        @id @default(uuid())
+  organizationId      String
+  email               String
+  passwordHash        String?
+  fullName            String
+  phone               String        @default("")
+  role                UserRole
+  status              AccountStatus @default(pending)
+  mfaEnabled          Boolean       @default(false)
+  mfaSecret           String?
+  emailVerifiedAt     DateTime?
+  profileImage        String?
+  department          String?
+  permissions         Json?
+  lastLoginAt         DateTime?
+  failedLoginAttempts Int           @default(0)
+  lockedUntil         DateTime?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  organization              Organization               @relation(fields: [organizationId], references: [id])
+  sessions                  Session[]
+  invitationsSent           Invitation[]               @relation("InvitedBy")
+  auditLogs                 AuditLog[]
+  loginActivities           LoginActivity[]
+  emailVerificationTokens   EmailVerificationToken[]
+  passwordResetTokens       PasswordResetToken[]
+  mfaBackupCodes            MfaBackupCode[]
+  notifications             Notification[]
+  activityItems             ActivityItem[]
+  assignedDocumentRequests  DocumentRequest[]
+  documentBookmarks         DocumentBookmark[]
+  savedSearches             SavedSearch[]
+  accessRequests            AccessRequest[]
+  aiQueryLogs               AiQueryLog[]
+  notificationPreference    NotificationPreference?
+  notificationDeliveryLogs  NotificationDeliveryLog[]
+
+  @@unique([organizationId, email])
+  @@index([organizationId])
+  @@index([email])
+}
+
+model Session {
+  id               String   @id @default(uuid())
+  userId           String
+  refreshTokenHash String
+  ipAddress        String?
+  userAgent        String?
+  loginAt          DateTime @default(now())
+  lastActivityAt   DateTime @default(now())
+  expiresAt        DateTime
+  isActive         Boolean  @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isActive])
+}
+
+model Invitation {
+  id             String           @id @default(uuid())
+  tokenHash      String           @unique
+  email          String
+  fullName       String
+  phone          String?
+  role           UserRole
+  organizationId String
+  department     String?
+  requireMfa     Boolean          @default(true)
+  expiresAt      DateTime
+  status         InvitationStatus @default(pending)
+  invitedById    String
+  createdAt      DateTime         @default(now())
+  acceptedAt     DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  invitedBy    User         @relation("InvitedBy", fields: [invitedById], references: [id])
+
+  @@index([email])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MfaBackupCode {
+  id       String    @id @default(uuid())
+  userId   String
+  codeHash String
+  usedAt   DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LoginActivity {
+  id            String   @id @default(uuid())
+  userId        String?
+  email         String
+  timestamp     DateTime @default(now())
+  ipAddress     String?
+  userAgent     String?
+  device        String?
+  browser       String?
+  status        String
+  failureReason String?
+  mfaVerified   Boolean  @default(false)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([timestamp])
+  @@index([email])
+}
+
+model AuditLog {
+  id            String        @id @default(uuid())
+  organizationId String
+  userId        String?
+  userName      String?
+  userRole      String?
+  action        String
+  resource      String
+  resourceId    String?
+  resourceType  String
+  actionDetails String
+  ipAddress     String?
+  userAgent     String?
+  changes       Json?
+  status        String        @default("success")
+  severity      AuditSeverity @default(info)
+  timestamp     DateTime      @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, timestamp])
+  @@index([userId])
+  @@index([resourceType])
+}
+
+enum ObligationStatus {
+  compliant
+  warning
+  overdue
+  pending
+}
+
+enum DocumentRequestStatus {
+  pending
+  in_progress
+  completed
+}
+
+enum NotificationType {
+  regulatory_update
+  compliance_deadline
+  document_approval
+  contract_expiry
+  system_announcement
+  task_assignment
+  escalation
+}
+
+enum NotificationPriority {
+  low
+  medium
+  high
+  critical
+}
+
+model ComplianceObligation {
+  id                 String           @id @default(uuid())
+  organizationId     String
+  title              String
+  description        String           @default("")
+  regulation         String           @default("")
+  jurisdiction       String?
+  department         String?
+  requirementLevel   String           @default("mandatory")
+  status             ObligationStatus
+  deadline           DateTime
+  assignedTo         String
+  priority           String           @default("medium")
+  regulatoryUpdateId String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  organization Organization        @relation(fields: [organizationId], references: [id])
+  regulatoryUpdate RegulatoryUpdate? @relation(fields: [regulatoryUpdateId], references: [id], onDelete: SetNull)
+  evidence         ComplianceEvidence[]
+
+  @@index([organizationId, status])
+  @@index([organizationId, deadline])
+  @@index([regulatoryUpdateId])
+}
+
+enum RegulatoryUpdateStatus {
+  pending_review
+  reviewed
+  action_required
+  implemented
+  not_applicable
+}
+
+model RegulatoryUpdate {
+  id             String                 @id @default(uuid())
+  organizationId String
+  title          String
+  description    String
+  category       String
+  impact         String                 @default("medium")
+  jurisdiction   String?
+  status         RegulatoryUpdateStatus @default(pending_review)
+  effectiveDate  DateTime?
+  source         String?
+  isRead         Boolean                @default(false)
+  reviewedByName String?
+  reviewedAt     DateTime?
+  publishedAt    DateTime               @default(now())
+  createdAt      DateTime               @default(now())
+  knowledgeDocumentId String?
+
+  organization Organization           @relation(fields: [organizationId], references: [id])
+  obligations  ComplianceObligation[]
+  history      RegulatoryUpdateHistory[]
+
+  @@index([organizationId, isRead])
+  @@index([organizationId, status])
+  @@index([organizationId, publishedAt])
+}
+
+model RegulatoryUpdateHistory {
+  id                 String   @id @default(uuid())
+  regulatoryUpdateId String
+  organizationId     String
+  action             String
+  details            String
+  performedByName    String
+  performedById      String?
+  changes            Json?
+  createdAt          DateTime @default(now())
+
+  regulatoryUpdate RegulatoryUpdate @relation(fields: [regulatoryUpdateId], references: [id], onDelete: Cascade)
+
+  @@index([regulatoryUpdateId, createdAt])
+  @@index([organizationId, createdAt])
+}
+
+model ComplianceEvidence {
+  id             String   @id @default(uuid())
+  organizationId String
+  obligationId   String
+  fileName       String
+  fileUrl        String   @default("")
+  uploadedBy     String
+  notes          String?
+  uploadedAt     DateTime @default(now())
+
+  organization Organization         @relation(fields: [organizationId], references: [id])
+  obligation   ComplianceObligation @relation(fields: [obligationId], references: [id], onDelete: Cascade)
+
+  @@index([obligationId])
+}
+
+model DocumentRequest {
+  id             String                @id @default(uuid())
+  organizationId String
+  title          String
+  requestedBy    String
+  assignedToId   String?
+  dueDate        DateTime
+  status         DocumentRequestStatus @default(pending)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  assignedTo   User?        @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, status])
+}
+
+model Notification {
+  id             String               @id @default(uuid())
+  organizationId String
+  userId         String
+  type           NotificationType
+  title          String
+  message        String
+  priority       NotificationPriority @default(medium)
+  isRead         Boolean              @default(false)
+  linkUrl        String?
+  createdAt      DateTime             @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([organizationId, createdAt])
+  @@index([userId, type])
+}
+
+model NotificationPreference {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  channels        Json
+  typePreferences Json
+  quietHours      Json?
+  emailDigest     Json?
+  subscriptions   Json?
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model NotificationDeliveryLog {
+  id             String    @id @default(uuid())
+  organizationId String
+  userId         String
+  notificationId String?
+  channel        String
+  status         String
+  title          String
+  message        String
+  failureReason  String?
+  sentAt         DateTime  @default(now())
+  deliveredAt    DateTime?
+  readAt         DateTime?
+  failedAt       DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, sentAt])
+  @@index([organizationId, sentAt])
+}
+
+model EscalationRule {
+  id                    String   @id @default(uuid())
+  organizationId        String
+  name                  String
+  triggerCondition      String
+  escalationDelayDays   Int      @default(3)
+  escalateToRoles       Json
+  isActive              Boolean  @default(true)
+  createdByName         String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, isActive])
+}
+
+model Broadcast {
+  id             String               @id @default(uuid())
+  organizationId String
+  title          String
+  message        String
+  priority       NotificationPriority @default(medium)
+  targetAudience String               @default("all")
+  channels       Json
+  recipientCount Int
+  readCount      Int                  @default(0)
+  createdById    String
+  createdByName  String
+  expiresAt      DateTime?
+  createdAt      DateTime             @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, createdAt])
+}
+
+model ActivityItem {
+  id             String   @id @default(uuid())
+  organizationId String
+  userId         String?
+  userName       String?
+  userRole       String?
+  action         String
+  description    String
+  module         String
+  resourceType   String?
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt])
+}
+
+enum LegalDocumentType {
+  law
+  regulation
+  case_law
+  template
+  guidance
+}
+
+enum LegalDocumentStatus {
+  active
+  archived
+  repealed
+}
+
+model LegalDocument {
+  id             String              @id @default(uuid())
+  organizationId String
+  title          String
+  type           LegalDocumentType
+  jurisdiction   String?
+  industry       String?
+  datePublished  DateTime?
+  lastAmended    DateTime?
+  version        String              @default("1.0")
+  summary        String              @default("")
+  content        String              @default("")
+  citations      Json                @default("[]")
+  fileUrl        String              @default("")
+  status         LegalDocumentStatus @default(active)
+  tags           Json                @default("[]")
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  versions     LegalDocumentVersion[]
+  annotations  DocumentAnnotation[]
+
+  @@index([organizationId, type])
+  @@index([organizationId, jurisdiction])
+}
+
+model LegalDocumentVersion {
+  id         String   @id @default(uuid())
+  documentId String
+  version    String
+  summary    String   @default("")
+  content    String   @default("")
+  fileUrl    String   @default("")
+  createdBy  String
+  createdAt  DateTime @default(now())
+
+  document LegalDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+}
+
+enum ContractStatus {
+  draft
+  pending_approval
+  approved
+  executed
+  expired
+  archived
+}
+
+model ContractFolder {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  parentId       String?
+  createdBy      String
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  contracts    Contract[]
+
+  @@index([organizationId])
+}
+
+model Contract {
+  id             String         @id @default(uuid())
+  organizationId String
+  folderId       String?
+  title          String
+  type           String         @default("custom")
+  status         ContractStatus @default(draft)
+  counterparty   String?
+  contractValue  Float?
+  currency       String         @default("USD")
+  startDate      DateTime?
+  endDate        DateTime?
+  expiryDate     DateTime?
+  autoRenew      Boolean        @default(false)
+  currentVersion Int            @default(1)
+  createdBy      String
+  fileUrl        String         @default("")
+  fileSize       Int            @default(0)
+  content        String         @default("")
+  tags           Json           @default("[]")
+  signedAt       DateTime?
+  checkedOutBy   String?
+  checkedOutAt   DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  organization Organization    @relation(fields: [organizationId], references: [id])
+  folder       ContractFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  versions     ContractVersion[]
+  approvals    ContractApproval[]
+  shares       ContractShare[]
+
+  @@index([organizationId, status])
+  @@index([organizationId, folderId])
+  @@index([organizationId, expiryDate])
+}
+
+model ContractVersion {
+  id          String   @id @default(uuid())
+  contractId  String
+  version     Int
+  fileUrl     String   @default("")
+  changeNotes String?
+  createdBy   String
+  createdAt   DateTime @default(now())
+
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+}
+
+model ContractTemplate {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  type           String
+  description    String   @default("")
+  body           String   @default("")
+  usageCount     Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+}
+
+model ContractShare {
+  id             String    @id @default(uuid())
+  organizationId String
+  contractId     String
+  token          String    @unique
+  createdById    String
+  createdByName  String
+  targetUserId   String?
+  permission     String    @default("view")
+  isExternal     Boolean   @default(false)
+  accessCount    Int       @default(0)
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  contract     Contract     @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, contractId])
+}
+
+model DocumentAnnotation {
+  id             String   @id @default(uuid())
+  organizationId String
+  documentId     String
+  userId         String
+  userName       String
+  content        String
+  page           Int?
+  createdAt      DateTime @default(now())
+
+  organization Organization  @relation(fields: [organizationId], references: [id])
+  document     LegalDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+}
+
+model ContractApproval {
+  id             String   @id @default(uuid())
+  organizationId String
+  contractId     String
+  submittedBy    String
+  approverName   String
+  status         String   @default("pending")
+  comment        String?
+  createdAt      DateTime @default(now())
+  decidedAt      DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  contract     Contract     @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@index([contractId])
+}
+
+enum AccessRequestStatus {
+  pending
+  approved
+  rejected
+}
+
+model CustomReport {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  description    String   @default("")
+  type           String   @default("custom")
+  templateId     String?
+  sections       Json     @default("[]")
+  filters        Json     @default("[]")
+  createdBy      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  scheduledReports ScheduledReport[]
+  generatedReports GeneratedReport[]
+
+  @@index([organizationId])
+}
+
+model ScheduledReport {
+  id             String   @id @default(uuid())
+  organizationId String
+  reportId       String
+  reportName     String
+  frequency      String
+  format         String   @default("pdf")
+  recipients     Json     @default("[]")
+  nextRunDate    DateTime
+  lastRunDate    DateTime?
+  isActive       Boolean  @default(true)
+  createdBy      String
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  report       CustomReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, isActive])
+}
+
+model GeneratedReport {
+  id             String   @id @default(uuid())
+  organizationId String
+  reportId       String?
+  reportName     String
+  type           String   @default("custom")
+  format         String
+  generatedBy    String
+  fileUrl        String   @default("")
+  fileSize       Int      @default(0)
+  content        String   @default("")
+  createdAt      DateTime @default(now())
+
+  organization Organization  @relation(fields: [organizationId], references: [id])
+  report       CustomReport? @relation(fields: [reportId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt])
+}
+
+model AccessRequest {
+  id                String              @id @default(uuid())
+  organizationId    String
+  requesterId       String
+  requesterName     String
+  requestedRole     String?
+  requestedModules  Json?
+  justification     String
+  status            AccessRequestStatus @default(pending)
+  reviewedBy        String?
+  reviewedAt        DateTime?
+  reviewComments    String?
+  createdAt         DateTime            @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  requester    User         @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+}
+
+model BulkImportJob {
+  id             String   @id @default(uuid())
+  organizationId String
+  fileName       String
+  status         String   @default("processing")
+  totalRecords   Int      @default(0)
+  successCount   Int      @default(0)
+  failureCount   Int      @default(0)
+  errors         Json     @default("[]")
+  uploadedBy     String
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, createdAt])
+}
+
+model DocumentBookmark {
+  id             String   @id @default(uuid())
+  organizationId String
+  userId         String
+  documentId     String
+  documentType   String   @default("legal")
+  notes          String?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, documentId, documentType])
+  @@index([organizationId, userId])
+}
+
+model SavedSearch {
+  id             String   @id @default(uuid())
+  organizationId String
+  userId         String
+  name           String
+  module         String
+  query          Json
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, userId])
+}
+
+model Integration {
+  id             String    @id @default(uuid())
+  organizationId String
+  name           String
+  type           String
+  status         String    @default("disconnected")
+  config         Json
+  lastSyncAt     DateTime?
+  errorCount     Int       @default(0)
+  recordsSynced  Int       @default(0)
+  isActive       Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, type])
+}
+
+model ApiKey {
+  id             String    @id @default(uuid())
+  organizationId String
+  name           String
+  keyPrefix      String
+  keyHash        String
+  createdBy      String
+  expiresAt      DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+}
+
+model AiQueryLog {
+  id             String   @id @default(uuid())
+  organizationId String
+  userId         String
+  query          String
+  response       String
+  confidence     Float    @default(0.75)
+  sources        Json     @default("[]")
+  feedback       String?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+}

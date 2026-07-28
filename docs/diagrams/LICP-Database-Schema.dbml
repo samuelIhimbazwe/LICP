@@ -1,0 +1,45 @@
+// Figure 8 — LICP core schema (5 tables)
+// Import at https://dbdiagram.io — stack vertically top to bottom
+
+Table organizations {
+  id text [pk]
+  name text
+  slug text [unique]
+  mfa_required boolean
+}
+
+Table users {
+  id text [pk]
+  organization_id text [ref: > organizations.id]
+  email text
+  password_hash text
+  role varchar
+  status varchar
+}
+
+Table regulatory_updates {
+  id text [pk]
+  organization_id text [ref: > organizations.id]
+  title text
+  impact text
+  status varchar
+  effective_date datetime
+}
+
+Table compliance_obligations {
+  id text [pk]
+  organization_id text [ref: > organizations.id]
+  regulatory_update_id text [ref: > regulatory_updates.id]
+  title text
+  status varchar
+  deadline datetime
+  assigned_to text
+}
+
+Table compliance_evidence {
+  id text [pk]
+  obligation_id text [ref: > compliance_obligations.id]
+  file_name text
+  uploaded_by text
+  uploaded_at datetime
+}

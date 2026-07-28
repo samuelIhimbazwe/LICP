@@ -1,0 +1,154 @@
+@startuml LICP_Class_Diagram
+' Figure 3 — Domain class diagram (LICP core entities)
+
+scale 0.85
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  ArrowColor #334155
+}
+skinparam package {
+  BackgroundColor #EEF2FF
+  BorderColor #4338CA
+}
+
+top to bottom direction
+
+package "Identity and Security" {
+  class Organization <<AggregateRoot>> {
+    +id: UUID
+    +name: String
+    +slug: String
+    +mfaRequired: Boolean
+    --
+    +manageSettings()
+    +getUsers()
+  }
+
+  class User {
+    +id: UUID
+    +email: String
+    +fullName: String
+    +role: UserRole
+    +status: AccountStatus
+    --
+    +authenticate()
+    +enableMfa()
+  }
+
+  class Session {
+    +id: UUID
+    +refreshTokenHash: String
+    +expiresAt: DateTime
+    +isActive: Boolean
+  }
+
+  class AuditLog {
+    +id: UUID
+    +action: String
+    +resource: String
+    +severity: AuditSeverity
+    +timestamp: DateTime
+  }
+}
+
+package "Compliance" {
+  class RegulatoryUpdate {
+    +id: UUID
+    +title: String
+    +impact: String
+    +status: RegulatoryUpdateStatus
+    +effectiveDate: DateTime
+    --
+    +markReviewed()
+  }
+
+  class ComplianceObligation {
+    +id: UUID
+    +title: String
+    +status: ObligationStatus
+    +deadline: DateTime
+    +assignedTo: String
+    --
+    +updateStatus()
+    +requiresEvidence()
+  }
+
+  class ComplianceEvidence {
+    +id: UUID
+    +fileName: String
+    +uploadedBy: String
+    +uploadedAt: DateTime
+  }
+}
+
+package "Legal Assets" {
+  class LegalDocument {
+    +id: UUID
+    +title: String
+    +type: LegalDocumentType
+    +jurisdiction: String
+    +content: String
+  }
+
+  class Contract {
+    +id: UUID
+    +title: String
+    +status: ContractStatus
+    +expiryDate: DateTime
+    +checkedOutBy: String
+    --
+    +checkout()
+    +checkin()
+  }
+}
+
+package "Platform Services" {
+  class Notification {
+    +id: UUID
+    +title: String
+    +type: String
+    +isRead: Boolean
+    +createdAt: DateTime
+  }
+
+  class Integration {
+    +id: UUID
+    +name: String
+    +type: String
+    +status: String
+    +lastSyncAt: DateTime
+    --
+    +sync()
+    +healthCheck()
+  }
+
+  class AiQueryLog {
+    +id: UUID
+    +query: String
+    +response: String
+    +confidence: Float
+    +sources: JSON
+  }
+}
+
+Organization "1" *-- "many" User : employs
+User "1" *-- "many" Session : maintains
+Organization "1" o-- "many" AuditLog : records
+
+Organization "1" o-- "many" RegulatoryUpdate
+Organization "1" o-- "many" ComplianceObligation
+RegulatoryUpdate "1" o-- "0..*" ComplianceObligation : spawns
+ComplianceObligation "1" *-- "many" ComplianceEvidence : requires
+
+Organization "1" o-- "many" LegalDocument
+Organization "1" o-- "many" Contract
+
+Organization "1" o-- "many" Notification
+Organization "1" o-- "many" Integration
+Organization "1" o-- "many" AiQueryLog
+User "1" o-- "many" AiQueryLog : submits
+
+@enduml
