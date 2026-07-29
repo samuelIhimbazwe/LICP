@@ -97,13 +97,13 @@ export function Sidebar({ className }: SidebarProps) {
         className
       )}
     >
-      <div className="flex h-12 items-center border-b border-border px-4">
+      <div className="flex h-12 items-center border-b border-sidebar-border px-4 text-sidebar-foreground">
         <BrandMark size="sm" />
       </div>
 
       <nav className="flex-1 overflow-y-auto px-2 py-3">
         {sections.map((section, sectionIndex) => (
-          <div key={sectionIndex} className={cn(sectionIndex > 0 && 'mt-4 border-t border-border pt-4')}>
+          <div key={sectionIndex} className={cn(sectionIndex > 0 && 'mt-4 border-t border-sidebar-border pt-4')}>
             <ul className="space-y-0.5">
               {section.items.map((item) => {
                 const Icon = item.icon;
@@ -116,10 +116,10 @@ export function Sidebar({ className }: SidebarProps) {
                         'flex w-full items-center gap-2.5 rounded-md border-l-2 border-transparent px-2.5 py-1.5 text-[13px] transition-colors',
                         active
                           ? 'nav-item-active'
-                          : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground'
+                          : 'text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                       )}
                     >
-                      <Icon className={cn('h-4 w-4 shrink-0', active && 'text-brand')} strokeWidth={active ? 2 : 1.5} />
+                      <Icon className={cn('h-4 w-4 shrink-0', active && 'text-current')} strokeWidth={active ? 2 : 1.5} />
                       <span className="truncate">{item.label}</span>
                     </button>
                   </li>

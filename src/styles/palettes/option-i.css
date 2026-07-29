@@ -1,0 +1,91 @@
+/* Option I — Signal White
+   Ultra-minimal product legal UI: near-white canvas, steel-blue brand,
+   Manrope UI + Fraunces display — soft, modern, high clarity. */
+
+:root {
+  --background: #fafafa;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --brand: #0369a1;
+  --brand-foreground: #ffffff;
+  --primary: #0a0a0a;
+  --primary-foreground: #fafafa;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #0a0a0a;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #e0f2fe;
+  --accent-foreground: #0a0a0a;
+  --destructive: #e11d48;
+  --destructive-foreground: #ffffff;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --input-background: #ffffff;
+  --switch-background: #d4d4d8;
+  --ring: #0369a1;
+  --chart-1: #0a0a0a;
+  --chart-2: #0369a1;
+  --chart-3: #71717a;
+  --chart-4: #7dd3fc;
+  --chart-5: #e11d48;
+  --sidebar: #f4f4f5;
+  --sidebar-foreground: #52525b;
+  --sidebar-primary: #0a0a0a;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #e0f2fe;
+  --sidebar-accent-foreground: #0a0a0a;
+  --sidebar-border: #e4e4e7;
+  --sidebar-ring: #0369a1;
+
+  --font-sans: 'Manrope', 'Segoe UI', sans-serif;
+  --font-serif: 'Fraunces', Georgia, serif;
+  --font-size: 14.5px;
+  --radius: 1rem;
+  --tracking-body: -0.02em;
+  --tracking-heading: -0.035em;
+  --heading-font: var(--font-serif);
+  --page-title-transform: none;
+  --page-title-tracking: -0.03em;
+  --brand-title-transform: none;
+  --brand-title-tracking: -0.02em;
+  --subtitle-transform: none;
+  --subtitle-tracking: 0;
+  --brand-mark-radius: 1rem;
+  --divider-width: 1.75rem;
+}
+
+.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #18181b;
+  --card-foreground: #fafafa;
+  --popover: #18181b;
+  --popover-foreground: #fafafa;
+  --brand: #38bdf8;
+  --brand-foreground: #09090b;
+  --primary: #fafafa;
+  --primary-foreground: #09090b;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #27272a;
+  --accent-foreground: #fafafa;
+  --destructive: #fb7185;
+  --destructive-foreground: #ffffff;
+  --border: #3f3f46;
+  --input: #3f3f46;
+  --input-background: #18181b;
+  --ring: #38bdf8;
+  --sidebar: #18181b;
+  --sidebar-foreground: #a1a1aa;
+  --sidebar-primary: #fafafa;
+  --sidebar-primary-foreground: #09090b;
+  --sidebar-accent: #27272a;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #3f3f46;
+  --sidebar-ring: #38bdf8;
+}

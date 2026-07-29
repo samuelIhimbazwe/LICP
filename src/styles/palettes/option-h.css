@@ -1,0 +1,91 @@
+/* Option H — Emerald Chambers
+   Global counsel warmth: deep forest authority, soft clay brand,
+   Karla body + Lora display — calm, grounded, not brass/navy/wine. */
+
+:root {
+  --background: #f6f4ef;
+  --foreground: #1b2e24;
+  --card: #fffcf7;
+  --card-foreground: #1b2e24;
+  --popover: #fffcf7;
+  --popover-foreground: #1b2e24;
+  --brand: #b57a4a;
+  --brand-foreground: #fffcf7;
+  --primary: #1b4332;
+  --primary-foreground: #f6f4ef;
+  --secondary: #ebe6dc;
+  --secondary-foreground: #1b2e24;
+  --muted: #ebe6dc;
+  --muted-foreground: #6b7268;
+  --accent: #e5efe8;
+  --accent-foreground: #1b2e24;
+  --destructive: #9f2d2d;
+  --destructive-foreground: #ffffff;
+  --border: #ddd4c6;
+  --input: #ddd4c6;
+  --input-background: #fffcf7;
+  --switch-background: #c5bfb2;
+  --ring: #1b4332;
+  --chart-1: #1b4332;
+  --chart-2: #b57a4a;
+  --chart-3: #6b7268;
+  --chart-4: #74a892;
+  --chart-5: #9f2d2d;
+  --sidebar: #ebe6dc;
+  --sidebar-foreground: #4a554c;
+  --sidebar-primary: #1b4332;
+  --sidebar-primary-foreground: #f6f4ef;
+  --sidebar-accent: #e5efe8;
+  --sidebar-accent-foreground: #1b2e24;
+  --sidebar-border: #ddd4c6;
+  --sidebar-ring: #1b4332;
+
+  --font-sans: 'Karla', 'Segoe UI', sans-serif;
+  --font-serif: 'Lora', Georgia, serif;
+  --font-size: 15.5px;
+  --radius: 0.35rem;
+  --tracking-body: 0.005em;
+  --tracking-heading: -0.01em;
+  --heading-font: var(--font-serif);
+  --page-title-transform: none;
+  --page-title-tracking: -0.01em;
+  --brand-title-transform: none;
+  --brand-title-tracking: 0.02em;
+  --subtitle-transform: none;
+  --subtitle-tracking: 0.06em;
+  --brand-mark-radius: 0.35rem;
+  --divider-width: 3.25rem;
+}
+
+.dark {
+  --background: #121a16;
+  --foreground: #e8efe9;
+  --card: #1a2420;
+  --card-foreground: #e8efe9;
+  --popover: #1a2420;
+  --popover-foreground: #e8efe9;
+  --brand: #d4a574;
+  --brand-foreground: #121a16;
+  --primary: #74a892;
+  --primary-foreground: #121a16;
+  --secondary: #24302a;
+  --secondary-foreground: #e8efe9;
+  --muted: #24302a;
+  --muted-foreground: #9aaba0;
+  --accent: #24302a;
+  --accent-foreground: #e8efe9;
+  --destructive: #e07070;
+  --destructive-foreground: #ffffff;
+  --border: #35453c;
+  --input: #35453c;
+  --input-background: #1a2420;
+  --ring: #74a892;
+  --sidebar: #161f1b;
+  --sidebar-foreground: #9aaba0;
+  --sidebar-primary: #74a892;
+  --sidebar-primary-foreground: #121a16;
+  --sidebar-accent: #24302a;
+  --sidebar-accent-foreground: #e8efe9;
+  --sidebar-border: #35453c;
+  --sidebar-ring: #74a892;
+}

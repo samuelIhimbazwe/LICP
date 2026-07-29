@@ -1,0 +1,91 @@
+/* Option J — Crimson Docket
+   Classic firm-red authority (common #2 law-firm web accent after blue),
+   soft rose-stone paper, Work Sans UI + Roboto Slab titles. */
+
+:root {
+  --background: #f7f4f4;
+  --foreground: #1f1416;
+  --card: #ffffff;
+  --card-foreground: #1f1416;
+  --popover: #ffffff;
+  --popover-foreground: #1f1416;
+  --brand: #9b1b30;
+  --brand-foreground: #ffffff;
+  --primary: #9b1b30;
+  --primary-foreground: #ffffff;
+  --secondary: #efe8e8;
+  --secondary-foreground: #1f1416;
+  --muted: #efe8e8;
+  --muted-foreground: #746466;
+  --accent: #f8e8eb;
+  --accent-foreground: #1f1416;
+  --destructive: #7f1d1d;
+  --destructive-foreground: #ffffff;
+  --border: #e2d6d7;
+  --input: #e2d6d7;
+  --input-background: #ffffff;
+  --switch-background: #c9b8ba;
+  --ring: #9b1b30;
+  --chart-1: #9b1b30;
+  --chart-2: #1f1416;
+  --chart-3: #746466;
+  --chart-4: #d4a5ad;
+  --chart-5: #7f1d1d;
+  --sidebar: #efe8e8;
+  --sidebar-foreground: #5c4c4e;
+  --sidebar-primary: #9b1b30;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f8e8eb;
+  --sidebar-accent-foreground: #1f1416;
+  --sidebar-border: #e2d6d7;
+  --sidebar-ring: #9b1b30;
+
+  --font-sans: 'Work Sans', 'Segoe UI', sans-serif;
+  --font-serif: 'Roboto Slab', Georgia, serif;
+  --font-size: 14.5px;
+  --radius: 0.1875rem;
+  --tracking-body: -0.005em;
+  --tracking-heading: -0.015em;
+  --heading-font: var(--font-serif);
+  --page-title-transform: none;
+  --page-title-tracking: -0.015em;
+  --brand-title-transform: uppercase;
+  --brand-title-tracking: 0.1em;
+  --subtitle-transform: uppercase;
+  --subtitle-tracking: 0.1em;
+  --brand-mark-radius: 0.1875rem;
+  --divider-width: 2.75rem;
+}
+
+.dark {
+  --background: #160f10;
+  --foreground: #f3e9ea;
+  --card: #22181a;
+  --card-foreground: #f3e9ea;
+  --popover: #22181a;
+  --popover-foreground: #f3e9ea;
+  --brand: #e06b7e;
+  --brand-foreground: #160f10;
+  --primary: #e06b7e;
+  --primary-foreground: #160f10;
+  --secondary: #2e2224;
+  --secondary-foreground: #f3e9ea;
+  --muted: #2e2224;
+  --muted-foreground: #b5a3a6;
+  --accent: #2e2224;
+  --accent-foreground: #f3e9ea;
+  --destructive: #f87171;
+  --destructive-foreground: #ffffff;
+  --border: #433436;
+  --input: #433436;
+  --input-background: #22181a;
+  --ring: #e06b7e;
+  --sidebar: #1c1416;
+  --sidebar-foreground: #b5a3a6;
+  --sidebar-primary: #e06b7e;
+  --sidebar-primary-foreground: #160f10;
+  --sidebar-accent: #2e2224;
+  --sidebar-accent-foreground: #f3e9ea;
+  --sidebar-border: #433436;
+  --sidebar-ring: #e06b7e;
+}

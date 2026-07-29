@@ -1,78 +1,92 @@
-/* Option B — Modern Legal Tech (Harvey / Clio style: clean neutrals, vibrant blue, teal accent) */
+/* Option B — Editorial Ledger
+   Research cue: Legora / editorial legal AI — warm paper, ink restraint,
+   whisper-weight serif headlines, humanist body, hairline geometry.
+   Entirely different from A: no brass, no uppercase shouting, sharp corners. */
 
 :root {
-  --background: #fafaf9;
-  --foreground: #1c1917;
-  --card: #ffffff;
-  --card-foreground: #1c1917;
-  --popover: #ffffff;
-  --popover-foreground: #1c1917;
-
-  --brand: #0d9488;
-  --brand-foreground: #ffffff;
-
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
-  --secondary: #f5f5f4;
-  --secondary-foreground: #1c1917;
-  --muted: #f5f5f4;
-  --muted-foreground: #78716c;
-  --accent: #ecfdf5;
-  --accent-foreground: #1c1917;
-  --destructive: #dc2626;
+  --background: #f4f1ea;
+  --foreground: #1a1a18;
+  --card: #faf8f4;
+  --card-foreground: #1a1a18;
+  --popover: #faf8f4;
+  --popover-foreground: #1a1a18;
+  --brand: #5f6f64;
+  --brand-foreground: #faf8f4;
+  --primary: #1a1a18;
+  --primary-foreground: #faf8f4;
+  --secondary: #ebe6dc;
+  --secondary-foreground: #1a1a18;
+  --muted: #ebe6dc;
+  --muted-foreground: #6e6a62;
+  --accent: #e7ece8;
+  --accent-foreground: #1a1a18;
+  --destructive: #8f2f2f;
   --destructive-foreground: #ffffff;
+  --border: #ddd6c8;
+  --input: #ddd6c8;
+  --input-background: #faf8f4;
+  --switch-background: #cfc7b8;
+  --ring: #1a1a18;
+  --chart-1: #1a1a18;
+  --chart-2: #5f6f64;
+  --chart-3: #6e6a62;
+  --chart-4: #a8b0a6;
+  --chart-5: #8f2f2f;
+  --sidebar: #ebe6dc;
+  --sidebar-foreground: #4a4740;
+  --sidebar-primary: #1a1a18;
+  --sidebar-primary-foreground: #faf8f4;
+  --sidebar-accent: #e7ece8;
+  --sidebar-accent-foreground: #1a1a18;
+  --sidebar-border: #ddd6c8;
+  --sidebar-ring: #1a1a18;
 
-  --border: #e7e5e4;
-  --input: #e7e5e4;
-  --input-background: #ffffff;
-  --switch-background: #d6d3d1;
-  --ring: #2563eb;
-
-  --chart-1: #2563eb;
-  --chart-2: #0d9488;
-  --chart-3: #78716c;
-  --chart-4: #a8a29e;
-  --chart-5: #dc2626;
-
-  --sidebar: #f5f5f4;
-  --sidebar-foreground: #57534e;
-  --sidebar-primary: #2563eb;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #ecfdf5;
-  --sidebar-accent-foreground: #1c1917;
-  --sidebar-border: #e7e5e4;
-  --sidebar-ring: #2563eb;
+  --font-sans: 'Source Sans 3', 'Segoe UI', sans-serif;
+  --font-serif: 'Newsreader', 'Times New Roman', serif;
+  --font-size: 16px;
+  --radius: 0.125rem;
+  --tracking-body: 0.005em;
+  --tracking-heading: -0.015em;
+  --heading-font: var(--font-serif);
+  --page-title-transform: none;
+  --page-title-tracking: -0.02em;
+  --brand-title-transform: none;
+  --brand-title-tracking: -0.01em;
+  --subtitle-transform: none;
+  --subtitle-tracking: 0.01em;
+  --brand-mark-radius: 0.125rem;
+  --divider-width: 1.5rem;
 }
 
 .dark {
-  --background: #1c1917;
-  --foreground: #fafaf9;
-  --card: #292524;
-  --card-foreground: #fafaf9;
-  --popover: #292524;
-  --popover-foreground: #fafaf9;
-  --brand: #2dd4bf;
-  --brand-foreground: #1c1917;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --secondary: #292524;
-  --secondary-foreground: #fafaf9;
-  --muted: #292524;
-  --muted-foreground: #a8a29e;
-  --accent: #292524;
-  --accent-foreground: #fafaf9;
-  --destructive: #ef4444;
+  --background: #171614;
+  --foreground: #efebe3;
+  --card: #21201c;
+  --card-foreground: #efebe3;
+  --popover: #21201c;
+  --popover-foreground: #efebe3;
+  --brand: #9aada0;
+  --brand-foreground: #171614;
+  --primary: #efebe3;
+  --primary-foreground: #171614;
+  --secondary: #2c2a26;
+  --secondary-foreground: #efebe3;
+  --muted: #2c2a26;
+  --muted-foreground: #a39e94;
+  --accent: #2c2a26;
+  --accent-foreground: #efebe3;
+  --destructive: #d16666;
   --destructive-foreground: #ffffff;
-  --border: #44403c;
-  --input: #44403c;
-  --input-background: #292524;
-  --ring: #3b82f6;
-  --sidebar: #292524;
-  --sidebar-foreground: #a8a29e;
-  --sidebar-primary: #3b82f6;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1c1917;
-  --sidebar-accent-foreground: #fafaf9;
-  --sidebar-border: #44403c;
-  --sidebar-ring: #3b82f6;
+  --border: #3d3a34;
+  --input: #3d3a34;
+  --input-background: #21201c;
+  --ring: #efebe3;
+  --sidebar: #1c1b18;
+  --sidebar-foreground: #a39e94;
+  --sidebar-primary: #efebe3;
+  --sidebar-primary-foreground: #171614;
+  --sidebar-accent: #2c2a26;
+  --sidebar-accent-foreground: #efebe3;
+  --sidebar-border: #3d3a34;
+  --sidebar-ring: #efebe3;
 }

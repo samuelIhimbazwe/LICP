@@ -1,78 +1,91 @@
-/* Option C — Global Enterprise (iManage / Relativity style: cool slate, corporate navy) */
+/* Option C — Precision AI
+   Research cue: Harvey design principles — consumer-grade clarity + enterprise trust.
+   Sans-first product UI, soft blue accent, rounded controls, no brass/serif shouting. */
 
 :root {
-  --background: #f4f6f8;
-  --foreground: #2d3748;
+  --background: #f7f8fa;
+  --foreground: #111827;
   --card: #ffffff;
-  --card-foreground: #2d3748;
+  --card-foreground: #111827;
   --popover: #ffffff;
-  --popover-foreground: #2d3748;
-
-  --brand: #3182ce;
+  --popover-foreground: #111827;
+  --brand: #3b6de0;
   --brand-foreground: #ffffff;
-
-  --primary: #1a365d;
+  --primary: #111827;
   --primary-foreground: #ffffff;
-  --secondary: #edf2f7;
-  --secondary-foreground: #2d3748;
-  --muted: #edf2f7;
-  --muted-foreground: #718096;
-  --accent: #ebf8ff;
-  --accent-foreground: #2d3748;
-  --destructive: #c53030;
+  --secondary: #eef1f6;
+  --secondary-foreground: #111827;
+  --muted: #eef1f6;
+  --muted-foreground: #6b7280;
+  --accent: #ebf1ff;
+  --accent-foreground: #111827;
+  --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-
-  --border: #e2e8f0;
-  --input: #e2e8f0;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
   --input-background: #ffffff;
-  --switch-background: #cbd5e0;
-  --ring: #3182ce;
-
-  --chart-1: #1a365d;
-  --chart-2: #3182ce;
-  --chart-3: #718096;
-  --chart-4: #a0aec0;
-  --chart-5: #c53030;
-
-  --sidebar: #edf2f7;
-  --sidebar-foreground: #4a5568;
-  --sidebar-primary: #1a365d;
+  --switch-background: #d1d5db;
+  --ring: #3b6de0;
+  --chart-1: #111827;
+  --chart-2: #3b6de0;
+  --chart-3: #6b7280;
+  --chart-4: #93a8d8;
+  --chart-5: #dc2626;
+  --sidebar: #eef1f6;
+  --sidebar-foreground: #4b5563;
+  --sidebar-primary: #111827;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #ebf8ff;
-  --sidebar-accent-foreground: #2d3748;
-  --sidebar-border: #e2e8f0;
-  --sidebar-ring: #3182ce;
+  --sidebar-accent: #ebf1ff;
+  --sidebar-accent-foreground: #111827;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #3b6de0;
+
+  --font-sans: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  --font-serif: 'IBM Plex Serif', Georgia, serif;
+  --font-size: 14.5px;
+  --radius: 0.5rem;
+  --tracking-body: -0.014em;
+  --tracking-heading: -0.025em;
+  --heading-font: var(--font-sans);
+  --page-title-transform: none;
+  --page-title-tracking: -0.025em;
+  --brand-title-transform: none;
+  --brand-title-tracking: -0.02em;
+  --subtitle-transform: none;
+  --subtitle-tracking: 0;
+  --brand-mark-radius: 0.5rem;
+  --divider-width: 2rem;
 }
 
 .dark {
-  --background: #1a202c;
-  --foreground: #edf2f7;
-  --card: #2d3748;
-  --card-foreground: #edf2f7;
-  --popover: #2d3748;
-  --popover-foreground: #edf2f7;
-  --brand: #63b3ed;
-  --brand-foreground: #1a202c;
-  --primary: #4299e1;
-  --primary-foreground: #1a202c;
-  --secondary: #2d3748;
-  --secondary-foreground: #edf2f7;
-  --muted: #2d3748;
-  --muted-foreground: #a0aec0;
-  --accent: #2d3748;
-  --accent-foreground: #edf2f7;
-  --destructive: #fc8181;
-  --destructive-foreground: #1a202c;
-  --border: #4a5568;
-  --input: #4a5568;
-  --input-background: #2d3748;
-  --ring: #63b3ed;
-  --sidebar: #2d3748;
-  --sidebar-foreground: #a0aec0;
-  --sidebar-primary: #4299e1;
-  --sidebar-primary-foreground: #1a202c;
-  --sidebar-accent: #1a202c;
-  --sidebar-accent-foreground: #edf2f7;
-  --sidebar-border: #4a5568;
-  --sidebar-ring: #63b3ed;
+  --background: #0b0f17;
+  --foreground: #e5e7eb;
+  --card: #121826;
+  --card-foreground: #e5e7eb;
+  --popover: #121826;
+  --popover-foreground: #e5e7eb;
+  --brand: #6b93f0;
+  --brand-foreground: #0b0f17;
+  --primary: #e5e7eb;
+  --primary-foreground: #0b0f17;
+  --secondary: #1a2233;
+  --secondary-foreground: #e5e7eb;
+  --muted: #1a2233;
+  --muted-foreground: #9ca3af;
+  --accent: #1a2233;
+  --accent-foreground: #e5e7eb;
+  --destructive: #f87171;
+  --destructive-foreground: #ffffff;
+  --border: #2a3447;
+  --input: #2a3447;
+  --input-background: #121826;
+  --ring: #6b93f0;
+  --sidebar: #101522;
+  --sidebar-foreground: #9ca3af;
+  --sidebar-primary: #e5e7eb;
+  --sidebar-primary-foreground: #0b0f17;
+  --sidebar-accent: #1a2233;
+  --sidebar-accent-foreground: #e5e7eb;
+  --sidebar-border: #2a3447;
+  --sidebar-ring: #6b93f0;
 }

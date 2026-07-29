@@ -20,7 +20,7 @@ export function AuthLayout({ children, title, subtitle, footer }: AuthLayoutProp
           <div className="mb-10 flex flex-col items-center text-center">
             <BrandMark size="md" />
             <div className="brand-divider mt-6" />
-            <p className="mt-4 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="brand-subtitle mt-4 text-[11px] text-muted-foreground">
               Internal organisation access only
             </p>
           </div>
@@ -28,7 +28,7 @@ export function AuthLayout({ children, title, subtitle, footer }: AuthLayoutProp
           {(title || subtitle) && (
             <div className="mb-6 text-center">
               {title && (
-                <h1 className="brand-title text-lg font-semibold uppercase tracking-[0.1em] text-foreground">{title}</h1>
+                <h1 className="brand-title text-lg font-semibold text-foreground">{title}</h1>
               )}
               {subtitle && (
                 <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">{subtitle}</p>

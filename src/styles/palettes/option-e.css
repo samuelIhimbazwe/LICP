@@ -1,0 +1,91 @@
+/* Option E — Boutique Counsel
+   Research cue: premium boutique firm branding (Lumen-style restraint) —
+   wine ink, soft stone paper, elegant display serif + contemporary grotesque. */
+
+:root {
+  --background: #f6f3f0;
+  --foreground: #2b1f22;
+  --card: #fffcfa;
+  --card-foreground: #2b1f22;
+  --popover: #fffcfa;
+  --popover-foreground: #2b1f22;
+  --brand: #7a3e4a;
+  --brand-foreground: #fffcfa;
+  --primary: #7a3e4a;
+  --primary-foreground: #fffcfa;
+  --secondary: #efe7e2;
+  --secondary-foreground: #2b1f22;
+  --muted: #efe7e2;
+  --muted-foreground: #7a6b6e;
+  --accent: #f3e9eb;
+  --accent-foreground: #2b1f22;
+  --destructive: #9b2c2c;
+  --destructive-foreground: #ffffff;
+  --border: #e4dad4;
+  --input: #e4dad4;
+  --input-background: #fffcfa;
+  --switch-background: #cbbdb8;
+  --ring: #7a3e4a;
+  --chart-1: #7a3e4a;
+  --chart-2: #2b1f22;
+  --chart-3: #7a6b6e;
+  --chart-4: #b58970;
+  --chart-5: #9b2c2c;
+  --sidebar: #efe7e2;
+  --sidebar-foreground: #5c4c50;
+  --sidebar-primary: #7a3e4a;
+  --sidebar-primary-foreground: #fffcfa;
+  --sidebar-accent: #f3e9eb;
+  --sidebar-accent-foreground: #2b1f22;
+  --sidebar-border: #e4dad4;
+  --sidebar-ring: #7a3e4a;
+
+  --font-sans: 'Figtree', 'Segoe UI', sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-size: 15.5px;
+  --radius: 0.25rem;
+  --tracking-body: 0.01em;
+  --tracking-heading: 0.01em;
+  --heading-font: var(--font-serif);
+  --page-title-transform: none;
+  --page-title-tracking: 0.01em;
+  --brand-title-transform: none;
+  --brand-title-tracking: 0.04em;
+  --subtitle-transform: none;
+  --subtitle-tracking: 0.08em;
+  --brand-mark-radius: 9999px;
+  --divider-width: 4rem;
+}
+
+.dark {
+  --background: #1a1416;
+  --foreground: #f2e9e6;
+  --card: #241c1f;
+  --card-foreground: #f2e9e6;
+  --popover: #241c1f;
+  --popover-foreground: #f2e9e6;
+  --brand: #c78490;
+  --brand-foreground: #1a1416;
+  --primary: #c78490;
+  --primary-foreground: #1a1416;
+  --secondary: #32272a;
+  --secondary-foreground: #f2e9e6;
+  --muted: #32272a;
+  --muted-foreground: #b5a4a8;
+  --accent: #32272a;
+  --accent-foreground: #f2e9e6;
+  --destructive: #e07070;
+  --destructive-foreground: #ffffff;
+  --border: #46383c;
+  --input: #46383c;
+  --input-background: #241c1f;
+  --ring: #c78490;
+  --sidebar: #20181b;
+  --sidebar-foreground: #b5a4a8;
+  --sidebar-primary: #c78490;
+  --sidebar-primary-foreground: #1a1416;
+  --sidebar-accent: #32272a;
+  --sidebar-accent-foreground: #f2e9e6;
+  --sidebar-border: #46383c;
+  --sidebar-ring: #c78490;
+}

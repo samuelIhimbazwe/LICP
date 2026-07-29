@@ -1,0 +1,91 @@
+/* Option D — Compliance Forge
+   Research cue: ClauseOS / RegTech SaaS — geometric type, navy authority,
+   mint progress signals, roomier radius, dashboard density. */
+
+:root {
+  --background: #f3f5f8;
+  --foreground: #0b1d36;
+  --card: #ffffff;
+  --card-foreground: #0b1d36;
+  --popover: #ffffff;
+  --popover-foreground: #0b1d36;
+  --brand: #1f9d6c;
+  --brand-foreground: #ffffff;
+  --primary: #0b1d36;
+  --primary-foreground: #ffffff;
+  --secondary: #e8edf3;
+  --secondary-foreground: #0b1d36;
+  --muted: #e8edf3;
+  --muted-foreground: #5b6b7c;
+  --accent: #e5f7ef;
+  --accent-foreground: #0b1d36;
+  --destructive: #c0392b;
+  --destructive-foreground: #ffffff;
+  --border: #d5dde6;
+  --input: #d5dde6;
+  --input-background: #ffffff;
+  --switch-background: #b8c4d1;
+  --ring: #1f9d6c;
+  --chart-1: #0b1d36;
+  --chart-2: #1f9d6c;
+  --chart-3: #5b6b7c;
+  --chart-4: #4d7ec9;
+  --chart-5: #c0392b;
+  --sidebar: #0b1d36;
+  --sidebar-foreground: #b8c4d1;
+  --sidebar-primary: #1f9d6c;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #14304f;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #1a2f4a;
+  --sidebar-ring: #1f9d6c;
+
+  --font-sans: 'Urbanist', 'Segoe UI', sans-serif;
+  --font-serif: 'Urbanist', 'Segoe UI', sans-serif;
+  --font-size: 14.5px;
+  --radius: 0.75rem;
+  --tracking-body: -0.005em;
+  --tracking-heading: -0.03em;
+  --heading-font: var(--font-sans);
+  --page-title-transform: none;
+  --page-title-tracking: -0.03em;
+  --brand-title-transform: uppercase;
+  --brand-title-tracking: 0.16em;
+  --subtitle-transform: uppercase;
+  --subtitle-tracking: 0.14em;
+  --brand-mark-radius: 0.75rem;
+  --divider-width: 2.5rem;
+}
+
+.dark {
+  --background: #07111f;
+  --foreground: #e8edf3;
+  --card: #0d1a2c;
+  --card-foreground: #e8edf3;
+  --popover: #0d1a2c;
+  --popover-foreground: #e8edf3;
+  --brand: #3ecf8e;
+  --brand-foreground: #07111f;
+  --primary: #e8edf3;
+  --primary-foreground: #07111f;
+  --secondary: #132338;
+  --secondary-foreground: #e8edf3;
+  --muted: #132338;
+  --muted-foreground: #8fa0b3;
+  --accent: #132338;
+  --accent-foreground: #e8edf3;
+  --destructive: #ef6b5e;
+  --destructive-foreground: #ffffff;
+  --border: #1e3350;
+  --input: #1e3350;
+  --input-background: #0d1a2c;
+  --ring: #3ecf8e;
+  --sidebar: #050d18;
+  --sidebar-foreground: #8fa0b3;
+  --sidebar-primary: #3ecf8e;
+  --sidebar-primary-foreground: #07111f;
+  --sidebar-accent: #132338;
+  --sidebar-accent-foreground: #e8edf3;
+  --sidebar-border: #1e3350;
+  --sidebar-ring: #3ecf8e;
+}

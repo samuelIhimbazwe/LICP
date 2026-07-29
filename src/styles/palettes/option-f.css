@@ -1,0 +1,91 @@
+/* Option F — Nordic Trust
+   Cool Scandinavian legal-tech: slate authority, soft teal brand,
+   geometric Outfit only — no display serif, airy spacing. */
+
+:root {
+  --background: #f3f5f7;
+  --foreground: #1e293b;
+  --card: #ffffff;
+  --card-foreground: #1e293b;
+  --popover: #ffffff;
+  --popover-foreground: #1e293b;
+  --brand: #0f766e;
+  --brand-foreground: #ffffff;
+  --primary: #1e293b;
+  --primary-foreground: #f8fafc;
+  --secondary: #e8eef2;
+  --secondary-foreground: #1e293b;
+  --muted: #e8eef2;
+  --muted-foreground: #64748b;
+  --accent: #e6f4f2;
+  --accent-foreground: #1e293b;
+  --destructive: #be123c;
+  --destructive-foreground: #ffffff;
+  --border: #d7e0e7;
+  --input: #d7e0e7;
+  --input-background: #ffffff;
+  --switch-background: #b6c4d0;
+  --ring: #0f766e;
+  --chart-1: #1e293b;
+  --chart-2: #0f766e;
+  --chart-3: #64748b;
+  --chart-4: #5eead4;
+  --chart-5: #be123c;
+  --sidebar: #e8eef2;
+  --sidebar-foreground: #475569;
+  --sidebar-primary: #1e293b;
+  --sidebar-primary-foreground: #f8fafc;
+  --sidebar-accent: #e6f4f2;
+  --sidebar-accent-foreground: #1e293b;
+  --sidebar-border: #d7e0e7;
+  --sidebar-ring: #0f766e;
+
+  --font-sans: 'Outfit', 'Segoe UI', sans-serif;
+  --font-serif: 'Outfit', 'Segoe UI', sans-serif;
+  --font-size: 15px;
+  --radius: 0.625rem;
+  --tracking-body: -0.01em;
+  --tracking-heading: -0.04em;
+  --heading-font: var(--font-sans);
+  --page-title-transform: none;
+  --page-title-tracking: -0.04em;
+  --brand-title-transform: none;
+  --brand-title-tracking: -0.03em;
+  --subtitle-transform: none;
+  --subtitle-tracking: 0.02em;
+  --brand-mark-radius: 0.625rem;
+  --divider-width: 2rem;
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #e2e8f0;
+  --card: #1e293b;
+  --card-foreground: #e2e8f0;
+  --popover: #1e293b;
+  --popover-foreground: #e2e8f0;
+  --brand: #2dd4bf;
+  --brand-foreground: #0f172a;
+  --primary: #e2e8f0;
+  --primary-foreground: #0f172a;
+  --secondary: #1e293b;
+  --secondary-foreground: #e2e8f0;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #1e293b;
+  --accent-foreground: #e2e8f0;
+  --destructive: #fb7185;
+  --destructive-foreground: #ffffff;
+  --border: #334155;
+  --input: #334155;
+  --input-background: #1e293b;
+  --ring: #2dd4bf;
+  --sidebar: #1e293b;
+  --sidebar-foreground: #94a3b8;
+  --sidebar-primary: #e2e8f0;
+  --sidebar-primary-foreground: #0f172a;
+  --sidebar-accent: #334155;
+  --sidebar-accent-foreground: #e2e8f0;
+  --sidebar-border: #334155;
+  --sidebar-ring: #2dd4bf;
+}

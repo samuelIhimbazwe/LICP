@@ -1,0 +1,92 @@
+/* Option G — Matter Ops
+   Ops-dense practice UI: graphite ink, burnt-orange signal accent
+   (law-firm color studies flag orange as a strong differentiator),
+   condensed Barlow + Merriweather dockets. */
+
+:root {
+  --background: #f4f3f1;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+  --brand: #c2410c;
+  --brand-foreground: #ffffff;
+  --primary: #292524;
+  --primary-foreground: #fafaf9;
+  --secondary: #ebe8e4;
+  --secondary-foreground: #1c1917;
+  --muted: #ebe8e4;
+  --muted-foreground: #78716c;
+  --accent: #fff1e8;
+  --accent-foreground: #1c1917;
+  --destructive: #b91c1c;
+  --destructive-foreground: #ffffff;
+  --border: #ddd6ce;
+  --input: #ddd6ce;
+  --input-background: #ffffff;
+  --switch-background: #c4bdb4;
+  --ring: #c2410c;
+  --chart-1: #292524;
+  --chart-2: #c2410c;
+  --chart-3: #78716c;
+  --chart-4: #fdba74;
+  --chart-5: #b91c1c;
+  --sidebar: #ebe8e4;
+  --sidebar-foreground: #57534e;
+  --sidebar-primary: #292524;
+  --sidebar-primary-foreground: #fafaf9;
+  --sidebar-accent: #fff1e8;
+  --sidebar-accent-foreground: #1c1917;
+  --sidebar-border: #ddd6ce;
+  --sidebar-ring: #c2410c;
+
+  --font-sans: 'Barlow', 'Segoe UI', sans-serif;
+  --font-serif: 'Merriweather', Georgia, serif;
+  --font-size: 14.5px;
+  --radius: 0.2rem;
+  --tracking-body: 0;
+  --tracking-heading: -0.01em;
+  --heading-font: var(--font-serif);
+  --page-title-transform: uppercase;
+  --page-title-tracking: 0.06em;
+  --brand-title-transform: uppercase;
+  --brand-title-tracking: 0.14em;
+  --subtitle-transform: uppercase;
+  --subtitle-tracking: 0.12em;
+  --brand-mark-radius: 0.2rem;
+  --divider-width: 2.25rem;
+}
+
+.dark {
+  --background: #1c1917;
+  --foreground: #f5f5f4;
+  --card: #292524;
+  --card-foreground: #f5f5f4;
+  --popover: #292524;
+  --popover-foreground: #f5f5f4;
+  --brand: #fb923c;
+  --brand-foreground: #1c1917;
+  --primary: #f5f5f4;
+  --primary-foreground: #1c1917;
+  --secondary: #292524;
+  --secondary-foreground: #f5f5f4;
+  --muted: #292524;
+  --muted-foreground: #a8a29e;
+  --accent: #292524;
+  --accent-foreground: #f5f5f4;
+  --destructive: #f87171;
+  --destructive-foreground: #ffffff;
+  --border: #44403c;
+  --input: #44403c;
+  --input-background: #292524;
+  --ring: #fb923c;
+  --sidebar: #292524;
+  --sidebar-foreground: #a8a29e;
+  --sidebar-primary: #f5f5f4;
+  --sidebar-primary-foreground: #1c1917;
+  --sidebar-accent: #44403c;
+  --sidebar-accent-foreground: #f5f5f4;
+  --sidebar-border: #44403c;
+  --sidebar-ring: #fb923c;
+}

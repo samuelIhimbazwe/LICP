@@ -1,0 +1,103 @@
+/* Option K — Corporate Navy (saved snapshot)
+   Elite Law board · Direction 03 + gold logo mark.
+   Navy rail, cool off-white workspace, white/slate nav type,
+   Playfair + Inter, muted-gold Scale logo. */
+
+:root {
+  --background: #f4f6f9;
+  --foreground: #1b2a4a;
+  --card: #ffffff;
+  --card-foreground: #1b2a4a;
+  --popover: #ffffff;
+  --popover-foreground: #1b2a4a;
+
+  --brand: #2a4a73;
+  --brand-foreground: #ffffff;
+
+  --primary: #1b2a4a;
+  --primary-foreground: #ffffff;
+  --secondary: #e8edf3;
+  --secondary-foreground: #1b2a4a;
+  --muted: #e8edf3;
+  --muted-foreground: #5a6a7a;
+  --accent: #e4ebf4;
+  --accent-foreground: #1b2a4a;
+  --destructive: #c0392b;
+  --destructive-foreground: #ffffff;
+
+  --border: #d8dee6;
+  --input: #d8dee6;
+  --input-background: #ffffff;
+  --switch-background: #b8c4d1;
+  --ring: #2a4a73;
+
+  --chart-1: #1b2a4a;
+  --chart-2: #2a4a73;
+  --chart-3: #5a6a7a;
+  --chart-4: #7a9cc0;
+  --chart-5: #c0392b;
+
+  --sidebar: #1b2a4a;
+  --sidebar-foreground: #c5d0de;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #1b2a4a;
+  --sidebar-accent: #243656;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #243656;
+  --sidebar-ring: #7a9cc0;
+
+  --logo: #a68b67;
+  --logo-foreground: #faf9f7;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-size: 15px;
+  --radius: 0.5rem;
+  --tracking-body: -0.011em;
+  --tracking-heading: 0.01em;
+  --heading-font: var(--font-serif);
+  --page-title-transform: none;
+  --page-title-tracking: -0.01em;
+  --brand-title-transform: none;
+  --brand-title-tracking: -0.01em;
+  --subtitle-transform: none;
+  --subtitle-tracking: 0.04em;
+  --brand-mark-radius: 0.5rem;
+  --divider-width: 2.5rem;
+}
+
+.dark {
+  --background: #0f1624;
+  --foreground: #e8edf3;
+  --card: #162033;
+  --card-foreground: #e8edf3;
+  --popover: #162033;
+  --popover-foreground: #e8edf3;
+  --brand: #7a9cc0;
+  --brand-foreground: #0f1624;
+  --primary: #e8edf3;
+  --primary-foreground: #0f1624;
+  --secondary: #1c2a40;
+  --secondary-foreground: #e8edf3;
+  --muted: #1c2a40;
+  --muted-foreground: #a8b4c4;
+  --accent: #243656;
+  --accent-foreground: #e8edf3;
+  --destructive: #e07070;
+  --destructive-foreground: #ffffff;
+  --border: #2a3a52;
+  --input: #2a3a52;
+  --input-background: #121c2e;
+  --ring: #7a9cc0;
+  --switch-background: #3a4d66;
+  --sidebar: #0a101c;
+  --sidebar-foreground: #b8c5d6;
+  --sidebar-primary: #e8edf3;
+  --sidebar-primary-foreground: #0a101c;
+  --sidebar-accent: #1c2a40;
+  --sidebar-accent-foreground: #e8edf3;
+  --sidebar-border: #1c2a40;
+  --sidebar-ring: #7a9cc0;
+  --logo: #c4a882;
+  --logo-foreground: #1a1a1a;
+}

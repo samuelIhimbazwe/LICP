@@ -13,7 +13,7 @@ export function PageHeader({ title, description, actions, className }: PageHeade
     <div className={cn('mb-8 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between', className)}>
       <div className="space-y-2">
         <div className="brand-divider" />
-        <h1 className="text-xl font-semibold uppercase tracking-[0.08em] text-foreground">{title}</h1>
+        <h1 className="page-title text-xl text-foreground">{title}</h1>
         {description && (
           <p className="text-[13px] leading-relaxed text-muted-foreground">{description}</p>
         )}
