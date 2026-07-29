@@ -7,29 +7,28 @@ export interface UserPermissions {
   actions: Record<string, boolean>;
 }
 
-const baseModules = {
-  dashboard: 'full' as PermissionLevel,
-  knowledgeBase: 'full' as PermissionLevel,
-  complianceTracking: 'full' as PermissionLevel,
-  regulatoryUpdates: 'full' as PermissionLevel,
-  contractManagement: 'full' as PermissionLevel,
-  notifications: 'full' as PermissionLevel,
-  aiIntelligence: 'full' as PermissionLevel,
-  analytics: 'view' as PermissionLevel,
-  userManagement: 'none' as PermissionLevel,
-  integrations: 'view' as PermissionLevel,
-  security: 'view' as PermissionLevel,
-  systemSettings: 'none' as PermissionLevel,
-};
-
+/**
+ * Role defaults aligned with LICP UI Modules doc:
+ * - Admin: platform owner (users, security, integrations, settings)
+ * - Manager: oversight + analytics
+ * - Compliance Officer: compliance + regulatory
+ * - Legal Practitioner: knowledge + contracts
+ * Shared: dashboard, notifications, AI
+ */
 const roleDefaults: Record<UserRole, UserPermissions> = {
-  compliance_officer: {
+  legal_practitioner: {
     modules: {
-      ...baseModules,
-      analytics: 'view',
+      dashboard: 'full',
+      knowledgeBase: 'full',
+      complianceTracking: 'view',
+      regulatoryUpdates: 'view',
+      contractManagement: 'full',
+      notifications: 'full',
+      aiIntelligence: 'full',
+      analytics: 'none',
       userManagement: 'none',
-      integrations: 'view',
-      security: 'view',
+      integrations: 'none',
+      security: 'none',
       systemSettings: 'none',
     },
     actions: {
@@ -38,18 +37,23 @@ const roleDefaults: Record<UserRole, UserPermissions> = {
       deleteDocuments: false,
       assignTasks: true,
       manageUsers: false,
-      viewReports: true,
+      viewReports: false,
       exportData: true,
       configureSystem: false,
     },
   },
-  legal_practitioner: {
+  compliance_officer: {
     modules: {
-      ...baseModules,
-      complianceTracking: 'edit',
-      regulatoryUpdates: 'edit',
+      dashboard: 'full',
+      knowledgeBase: 'view',
+      complianceTracking: 'full',
+      regulatoryUpdates: 'full',
+      contractManagement: 'view',
+      notifications: 'full',
+      aiIntelligence: 'full',
       analytics: 'view',
       userManagement: 'none',
+      integrations: 'none',
       security: 'none',
       systemSettings: 'none',
     },
@@ -66,10 +70,16 @@ const roleDefaults: Record<UserRole, UserPermissions> = {
   },
   manager: {
     modules: {
-      ...baseModules,
+      dashboard: 'full',
+      knowledgeBase: 'view',
+      complianceTracking: 'view',
+      regulatoryUpdates: 'edit',
+      contractManagement: 'edit',
+      notifications: 'full',
+      aiIntelligence: 'full',
       analytics: 'full',
-      userManagement: 'view',
-      integrations: 'view',
+      userManagement: 'none',
+      integrations: 'none',
       security: 'view',
       systemSettings: 'none',
     },
@@ -78,7 +88,7 @@ const roleDefaults: Record<UserRole, UserPermissions> = {
       approveDocuments: true,
       deleteDocuments: true,
       assignTasks: true,
-      manageUsers: true,
+      manageUsers: false,
       viewReports: true,
       exportData: true,
       configureSystem: false,
@@ -116,24 +126,51 @@ export function getDefaultPermissions(role: UserRole): UserPermissions {
   return JSON.parse(JSON.stringify(roleDefaults[role]));
 }
 
-export function mergePermissions(role: UserRole, override?: unknown): UserPermissions {
+/**
+ * Effective permissions = role defaults, optionally replaced by org role matrix overrides.
+ * Legacy per-user permission blobs are ignored so RBAC stays role-differentiated.
+ */
+export function mergePermissions(
+  role: UserRole,
+  _override?: unknown,
+  orgSettings?: Record<string, unknown> | null
+): UserPermissions {
   const base = getDefaultPermissions(role);
-  if (!override || typeof override !== 'object') return base;
-  return { ...base, ...(override as Partial<UserPermissions>) };
+  const overrides = (orgSettings?.rolePermissionOverrides ?? {}) as Partial<
+    Record<UserRole, UserPermissions>
+  >;
+  const custom = overrides[role];
+  if (!custom?.modules) return base;
+  return {
+    modules: { ...base.modules, ...custom.modules },
+    actions: { ...base.actions, ...(custom.actions ?? {}) },
+  };
 }
 
-const routeRoleMap: Record<string, UserRole[] | 'admin'> = {
-  '/user-management': 'admin',
-  '/system-settings': 'admin',
-  '/integrations': ['admin', 'compliance_officer', 'manager', 'legal_practitioner'],
-  '/security': ['admin', 'manager', 'compliance_officer'],
-};
+const routeModuleMap: Array<{ prefix: string; module: string; minLevel?: PermissionLevel }> = [
+  { prefix: '/user-management', module: 'userManagement', minLevel: 'full' },
+  { prefix: '/system-settings', module: 'systemSettings', minLevel: 'full' },
+  { prefix: '/integrations', module: 'integrations', minLevel: 'view' },
+  { prefix: '/security', module: 'security', minLevel: 'view' },
+  { prefix: '/analytics', module: 'analytics', minLevel: 'view' },
+  { prefix: '/knowledge-base', module: 'knowledgeBase', minLevel: 'view' },
+  { prefix: '/compliance-tracking', module: 'complianceTracking', minLevel: 'view' },
+  { prefix: '/regulatory-updates', module: 'regulatoryUpdates', minLevel: 'view' },
+  { prefix: '/contracts', module: 'contractManagement', minLevel: 'view' },
+  { prefix: '/ai-intelligence', module: 'aiIntelligence', minLevel: 'view' },
+  { prefix: '/notifications', module: 'notifications', minLevel: 'view' },
+  { prefix: '/dashboard', module: 'dashboard', minLevel: 'view' },
+];
 
-export function canAccessRoute(role: UserRole, path: string): boolean {
-  for (const [prefix, allowed] of Object.entries(routeRoleMap)) {
+export function canAccessRoute(
+  role: UserRole,
+  path: string,
+  permissions?: UserPermissions
+): boolean {
+  const perms = permissions ?? getDefaultPermissions(role);
+  for (const { prefix, module, minLevel } of routeModuleMap) {
     if (path.startsWith(prefix)) {
-      if (allowed === 'admin') return role === 'admin';
-      return allowed.includes(role);
+      return hasModuleAccess(perms, module, minLevel ?? 'view');
     }
   }
   return true;
@@ -168,4 +205,10 @@ const roleLabels: Record<UserRole, string> = {
 
 export function getRoleLabel(role: UserRole): string {
   return roleLabels[role];
+}
+
+/** Path → module key for nav filtering */
+export function moduleForPath(path: string): string | null {
+  const hit = routeModuleMap.find((r) => path.startsWith(r.prefix));
+  return hit?.module ?? null;
 }

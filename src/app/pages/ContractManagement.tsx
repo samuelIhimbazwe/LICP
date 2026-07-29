@@ -75,6 +75,9 @@ export function ContractManagement() {
   const [versions, setVersions] = useState<Array<{ id: string; version: number; createdAt: string; changeNotes?: string }>>([]);
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [templateForm, setTemplateForm] = useState({ name: '', type: 'nda', description: '' });
+  const [folderDialogOpen, setFolderDialogOpen] = useState(false);
+  const [folderName, setFolderName] = useState('');
+  const [creatingFolder, setCreatingFolder] = useState(false);
 
   const {
     contracts,
@@ -96,6 +99,7 @@ export function ContractManagement() {
     decideApproval,
     submitForApproval,
     createTemplate,
+    createFolder,
   } = useContracts({
     folder: selectedFolder,
     status: selectedStatus,
@@ -422,10 +426,49 @@ export function ContractManagement() {
                     <span className="ml-auto text-xs text-slate-500">{folder.documentCount}</span>
                   </button>
                 ))}
-                <Button variant="outline" size="sm" className="w-full mt-4">
-                  <Plus className="mr-2 h-4 w-4" />
-                  New Folder
-                </Button>
+                <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="w-full mt-4">
+                      <Plus className="mr-2 h-4 w-4" />
+                      New Folder
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>New Folder</DialogTitle>
+                      <DialogDescription>Create a folder to organize contracts and documents</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Folder name</Label>
+                        <Input
+                          placeholder="e.g. NDAs 2026"
+                          value={folderName}
+                          onChange={(e) => setFolderName(e.target.value)}
+                        />
+                      </div>
+                      <Button
+                        className="w-full"
+                        disabled={creatingFolder || !folderName.trim()}
+                        onClick={async () => {
+                          try {
+                            setCreatingFolder(true);
+                            await createFolder(folderName.trim());
+                            toast.success(`Folder "${folderName.trim()}" created.`);
+                            setFolderName('');
+                            setFolderDialogOpen(false);
+                          } catch (err) {
+                            toast.error(err instanceof Error ? err.message : 'Failed to create folder.');
+                          } finally {
+                            setCreatingFolder(false);
+                          }
+                        }}
+                      >
+                        {creatingFolder ? 'Creating…' : 'Create Folder'}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </CardContent>
             </Card>
 

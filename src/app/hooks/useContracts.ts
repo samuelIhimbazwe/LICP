@@ -228,6 +228,14 @@ export function useContracts(filters?: {
     await load();
   };
 
+  const createFolder = async (name: string, parentId?: string) => {
+    await apiRequest('/contracts/folders', {
+      method: 'POST',
+      body: JSON.stringify({ name, parentId }),
+    });
+    await load();
+  };
+
   return {
     contracts,
     folders,
@@ -249,5 +257,6 @@ export function useContracts(filters?: {
     decideApproval,
     submitForApproval,
     createTemplate,
+    createFolder,
   };
 }

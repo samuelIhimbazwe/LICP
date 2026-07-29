@@ -53,6 +53,31 @@ export function RegulatoryUpdates() {
   const [showWorkflow, setShowWorkflow] = useState(false);
   const [subscriptions, setSubscriptions] = useState(updateSubscriptions);
   const [assessments, setAssessments] = useState(impactAssessments);
+  const [assessOpenFor, setAssessOpenFor] = useState<string | null>(null);
+  const [assessForm, setAssessForm] = useState({
+    impactLevel: 'medium',
+    departments: '',
+    actions: '',
+    cost: '',
+    effort: '',
+    deadline: '',
+    notes: '',
+  });
+  const [savingAssessment, setSavingAssessment] = useState(false);
+  const [statusDialogFor, setStatusDialogFor] = useState<string | null>(null);
+  const [statusValue, setStatusValue] = useState('reviewed');
+  const [subDialogOpen, setSubDialogOpen] = useState(false);
+  const [subForm, setSubForm] = useState({
+    rwanda: true,
+    eac: false,
+    international: false,
+    finance: false,
+    labor: true,
+    tech: false,
+    email: true,
+    sms: false,
+  });
+  const [savingSub, setSavingSub] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -73,7 +98,7 @@ export function RegulatoryUpdates() {
     })();
   }, []);
 
-  const { updates, summary, loading, error, reviewUpdate, createObligationFromUpdate, createUpdate } =
+  const { updates, summary, loading, error, reviewUpdate, createObligationFromUpdate, createUpdate, updateUpdate } =
     useRegulatoryUpdates(selectedCategory, selectedStatus);
 
   useEffect(() => {
@@ -94,6 +119,118 @@ export function RegulatoryUpdates() {
     setSelectedUpdate(null);
   };
 
+  const persistOrgList = async (
+    key: 'impactAssessments' | 'regulatorySubscriptions',
+    next: unknown[]
+  ) => {
+    try {
+      const current = await apiRequest<{ settings: Record<string, unknown> }>('/org/settings');
+      await apiRequest('/org/settings', {
+        method: 'PUT',
+        body: JSON.stringify({
+          ...current.settings,
+          [key]: next,
+        }),
+      });
+    } catch {
+      // Non-admin or settings unavailable — keep local state
+    }
+  };
+
+  const handleSaveAssessment = async (updateId: string) => {
+    setSavingAssessment(true);
+    try {
+      await updateUpdate(updateId, {
+        impact: assessForm.impactLevel,
+        status: 'action_required',
+        isRead: true,
+      });
+      const entry = {
+        id: `ia-${Date.now()}`,
+        updateId,
+        assessedBy: user?.fullName ?? 'Current User',
+        assessedAt: new Date(),
+        impactLevel: assessForm.impactLevel as 'critical' | 'high' | 'medium' | 'low' | 'minimal',
+        affectedDepartments: assessForm.departments
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
+        requiredActions: assessForm.actions
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean),
+        estimatedCost: Number(assessForm.cost) || 0,
+        estimatedEffort: assessForm.effort || 'TBD',
+        deadline: assessForm.deadline ? new Date(assessForm.deadline) : new Date(),
+        notes: assessForm.notes,
+      };
+      const next = [entry, ...assessments];
+      setAssessments(next);
+      await persistOrgList(
+        'impactAssessments',
+        next.map((a) => ({
+          ...a,
+          assessedAt: a.assessedAt instanceof Date ? a.assessedAt.toISOString() : a.assessedAt,
+          deadline: a.deadline instanceof Date ? a.deadline.toISOString() : a.deadline,
+        }))
+      );
+      toast.success('Impact assessment saved.');
+      setAssessOpenFor(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to save assessment.');
+    } finally {
+      setSavingAssessment(false);
+    }
+  };
+
+  const handleUpdateStatus = async (updateId: string) => {
+    try {
+      await reviewUpdate(updateId, statusValue);
+      toast.success('Status updated.');
+      setStatusDialogFor(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update status.');
+    }
+  };
+
+  const handleCreateSubscription = async () => {
+    setSavingSub(true);
+    try {
+      const jurisdictions = [
+        subForm.rwanda && 'Rwanda',
+        subForm.eac && 'EAC',
+        subForm.international && 'International',
+      ].filter(Boolean) as string[];
+      const industries = [
+        subForm.finance && 'Finance',
+        subForm.labor && 'Labor',
+        subForm.tech && 'Technology',
+      ].filter(Boolean) as string[];
+      if (jurisdictions.length === 0) {
+        toast.error('Select at least one jurisdiction.');
+        return;
+      }
+      const entry = {
+        id: `sub-${Date.now()}`,
+        userId: user?.id ?? 'current',
+        jurisdictions,
+        industries,
+        categories: ['new_law', 'amendment'] as Array<'new_law' | 'amendment'>,
+        emailNotifications: subForm.email,
+        smsNotifications: subForm.sms,
+      };
+      const next = [...subscriptions, entry];
+      setSubscriptions(next);
+      await persistOrgList('regulatorySubscriptions', next);
+      toast.success('Subscription created.');
+      setSubDialogOpen(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to create subscription.');
+    } finally {
+      setSavingSub(false);
+    }
+  };
+
   const [newUpdate, setNewUpdate] = useState({
     title: '',
     description: '',
@@ -106,7 +243,7 @@ export function RegulatoryUpdates() {
   const [savingUpdate, setSavingUpdate] = useState(false);
 
   const filteredUpdates = (updates ?? []).filter(
-    (u) => selectedImpact === 'all' || u.impact === selectedImpact
+    (u) => selectedImpact === 'all' || u.impactLevel === selectedImpact
   );
   const getCategoryBadge = (category: string) => {
     const badges: Record<string, { label: string; className: string }> = {
@@ -546,7 +683,25 @@ export function RegulatoryUpdates() {
                         </DialogContent>
                       </Dialog>
 
-                      <Dialog>
+                      <Dialog
+                        open={assessOpenFor === update.id}
+                        onOpenChange={(open) => {
+                          if (open) {
+                            setAssessOpenFor(update.id);
+                            setAssessForm({
+                              impactLevel: update.impactLevel || 'medium',
+                              departments: '',
+                              actions: '',
+                              cost: '',
+                              effort: '',
+                              deadline: '',
+                              notes: '',
+                            });
+                          } else {
+                            setAssessOpenFor(null);
+                          }
+                        }}
+                      >
                         <DialogTrigger asChild>
                           <Button size="sm">
                             <AlertTriangle className="mr-2 h-4 w-4" />
@@ -561,7 +716,10 @@ export function RegulatoryUpdates() {
                           <div className="space-y-4">
                             <div className="space-y-2">
                               <Label>Impact Level</Label>
-                              <Select>
+                              <Select
+                                value={assessForm.impactLevel}
+                                onValueChange={(v) => setAssessForm((f) => ({ ...f, impactLevel: v }))}
+                              >
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select impact level" />
                                 </SelectTrigger>
@@ -576,38 +734,108 @@ export function RegulatoryUpdates() {
                             </div>
                             <div className="space-y-2">
                               <Label>Affected Departments</Label>
-                              <Input placeholder="e.g., Legal, Compliance, HR" />
+                              <Input
+                                placeholder="e.g., Legal, Compliance, HR"
+                                value={assessForm.departments}
+                                onChange={(e) => setAssessForm((f) => ({ ...f, departments: e.target.value }))}
+                              />
                             </div>
                             <div className="space-y-2">
                               <Label>Required Actions</Label>
-                              <Textarea placeholder="List the actions required to comply with this update" rows={4} />
+                              <Textarea
+                                placeholder="One action per line"
+                                rows={4}
+                                value={assessForm.actions}
+                                onChange={(e) => setAssessForm((f) => ({ ...f, actions: e.target.value }))}
+                              />
                             </div>
                             <div className="grid gap-4 md:grid-cols-2">
                               <div className="space-y-2">
                                 <Label>Estimated Cost</Label>
-                                <Input type="number" placeholder="0.00" />
+                                <Input
+                                  type="number"
+                                  placeholder="0.00"
+                                  value={assessForm.cost}
+                                  onChange={(e) => setAssessForm((f) => ({ ...f, cost: e.target.value }))}
+                                />
                               </div>
                               <div className="space-y-2">
                                 <Label>Estimated Effort</Label>
-                                <Input placeholder="e.g., 2 weeks" />
+                                <Input
+                                  placeholder="e.g., 2 weeks"
+                                  value={assessForm.effort}
+                                  onChange={(e) => setAssessForm((f) => ({ ...f, effort: e.target.value }))}
+                                />
                               </div>
                             </div>
                             <div className="space-y-2">
                               <Label>Implementation Deadline</Label>
-                              <Input type="date" />
+                              <Input
+                                type="date"
+                                value={assessForm.deadline}
+                                onChange={(e) => setAssessForm((f) => ({ ...f, deadline: e.target.value }))}
+                              />
                             </div>
                             <div className="space-y-2">
                               <Label>Additional Notes</Label>
-                              <Textarea placeholder="Any additional notes or considerations" rows={3} />
+                              <Textarea
+                                placeholder="Any additional notes or considerations"
+                                rows={3}
+                                value={assessForm.notes}
+                                onChange={(e) => setAssessForm((f) => ({ ...f, notes: e.target.value }))}
+                              />
                             </div>
-                            <Button className="w-full">Save Assessment</Button>
+                            <Button
+                              className="w-full"
+                              disabled={savingAssessment}
+                              onClick={() => handleSaveAssessment(update.id)}
+                            >
+                              {savingAssessment ? 'Saving…' : 'Save Assessment'}
+                            </Button>
                           </div>
                         </DialogContent>
                       </Dialog>
 
-                      <Button size="sm" variant="outline">
-                        Update Status
-                      </Button>
+                      <Dialog
+                        open={statusDialogFor === update.id}
+                        onOpenChange={(open) => {
+                          if (open) {
+                            setStatusDialogFor(update.id);
+                            setStatusValue(update.status || 'reviewed');
+                          } else {
+                            setStatusDialogFor(null);
+                          }
+                        }}
+                      >
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline">
+                            Update Status
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Update Status</DialogTitle>
+                            <DialogDescription>Change workflow status for this regulatory update</DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <Select value={statusValue} onValueChange={setStatusValue}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending_review">Pending review</SelectItem>
+                                <SelectItem value="reviewed">Reviewed</SelectItem>
+                                <SelectItem value="action_required">Action required</SelectItem>
+                                <SelectItem value="implemented">Implemented</SelectItem>
+                                <SelectItem value="not_applicable">Not applicable</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Button className="w-full" onClick={() => handleUpdateStatus(update.id)}>
+                              Save Status
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </div>
                 ))}
@@ -713,7 +941,23 @@ export function RegulatoryUpdates() {
                         <p className="text-sm text-slate-600">Receiving updates for selected topics</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSubForm({
+                          rwanda: subscription.jurisdictions.includes('Rwanda'),
+                          eac: subscription.jurisdictions.includes('EAC'),
+                          international: subscription.jurisdictions.includes('International'),
+                          finance: subscription.industries.includes('Finance'),
+                          labor: subscription.industries.includes('Labor'),
+                          tech: subscription.industries.includes('Technology'),
+                          email: subscription.emailNotifications,
+                          sms: subscription.smsNotifications,
+                        });
+                        setSubDialogOpen(true);
+                      }}
+                    >
                       <Settings className="mr-2 h-4 w-4" />
                       Edit
                     </Button>
@@ -791,7 +1035,7 @@ export function RegulatoryUpdates() {
 
               <div>
                 <h3 className="font-semibold mb-3">Add New Subscription</h3>
-                <Dialog>
+                <Dialog open={subDialogOpen} onOpenChange={setSubDialogOpen}>
                   <DialogTrigger asChild>
                     <Button>
                       <Plus className="mr-2 h-4 w-4" />
@@ -808,15 +1052,27 @@ export function RegulatoryUpdates() {
                         <Label>Jurisdictions</Label>
                         <div className="space-y-2">
                           <div className="flex items-center space-x-2">
-                            <Checkbox id="rwanda" />
+                            <Checkbox
+                              id="rwanda"
+                              checked={subForm.rwanda}
+                              onCheckedChange={(c) => setSubForm((f) => ({ ...f, rwanda: Boolean(c) }))}
+                            />
                             <label htmlFor="rwanda" className="text-sm">Rwanda</label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <Checkbox id="eac" />
+                            <Checkbox
+                              id="eac"
+                              checked={subForm.eac}
+                              onCheckedChange={(c) => setSubForm((f) => ({ ...f, eac: Boolean(c) }))}
+                            />
                             <label htmlFor="eac" className="text-sm">EAC</label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <Checkbox id="international" />
+                            <Checkbox
+                              id="international"
+                              checked={subForm.international}
+                              onCheckedChange={(c) => setSubForm((f) => ({ ...f, international: Boolean(c) }))}
+                            />
                             <label htmlFor="international" className="text-sm">International</label>
                           </div>
                         </div>
@@ -826,15 +1082,27 @@ export function RegulatoryUpdates() {
                         <Label>Industries</Label>
                         <div className="space-y-2">
                           <div className="flex items-center space-x-2">
-                            <Checkbox id="finance" />
+                            <Checkbox
+                              id="finance"
+                              checked={subForm.finance}
+                              onCheckedChange={(c) => setSubForm((f) => ({ ...f, finance: Boolean(c) }))}
+                            />
                             <label htmlFor="finance" className="text-sm">Finance</label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <Checkbox id="labor" />
+                            <Checkbox
+                              id="labor"
+                              checked={subForm.labor}
+                              onCheckedChange={(c) => setSubForm((f) => ({ ...f, labor: Boolean(c) }))}
+                            />
                             <label htmlFor="labor" className="text-sm">Labor</label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <Checkbox id="tech" />
+                            <Checkbox
+                              id="tech"
+                              checked={subForm.tech}
+                              onCheckedChange={(c) => setSubForm((f) => ({ ...f, tech: Boolean(c) }))}
+                            />
                             <label htmlFor="tech" className="text-sm">Technology</label>
                           </div>
                         </div>
@@ -844,17 +1112,27 @@ export function RegulatoryUpdates() {
                         <Label>Notification Preferences</Label>
                         <div className="space-y-2">
                           <div className="flex items-center space-x-2">
-                            <Checkbox id="email" defaultChecked />
+                            <Checkbox
+                              id="email"
+                              checked={subForm.email}
+                              onCheckedChange={(c) => setSubForm((f) => ({ ...f, email: Boolean(c) }))}
+                            />
                             <label htmlFor="email" className="text-sm">Email notifications</label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <Checkbox id="sms" />
+                            <Checkbox
+                              id="sms"
+                              checked={subForm.sms}
+                              onCheckedChange={(c) => setSubForm((f) => ({ ...f, sms: Boolean(c) }))}
+                            />
                             <label htmlFor="sms" className="text-sm">SMS notifications (critical only)</label>
                           </div>
                         </div>
                       </div>
 
-                      <Button className="w-full">Create Subscription</Button>
+                      <Button className="w-full" disabled={savingSub} onClick={handleCreateSubscription}>
+                        {savingSub ? 'Creating…' : 'Create Subscription'}
+                      </Button>
                     </div>
                   </DialogContent>
                 </Dialog>

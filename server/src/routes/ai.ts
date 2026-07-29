@@ -163,14 +163,20 @@ aiRouter.post('/query', authenticate, async (req: AuthRequest, res) => {
           'Try inventory questions such as “list our contracts” or “show open obligations”.',
         ]
       : buildResearchRecommendationsFromHits(hits);
-  const confidence = research.hasLocalSources
-    ? sources.length >= 3
-      ? 0.9
-      : sources.length >= 2
-        ? 0.82
-        : 0.7
-    : research.usedExternalLlm
-      ? 0.4
+  const confidence = research.usedExternalLlm
+    ? research.hasLocalSources
+      ? sources.length >= 3
+        ? 0.88
+        : sources.length >= 1
+          ? 0.8
+          : 0.72
+      : 0.45
+    : research.hasLocalSources
+      ? sources.length >= 3
+        ? 0.75
+        : sources.length >= 2
+          ? 0.68
+          : 0.6
       : 0.35;
   const processingTimeMs = Date.now() - started;
 
@@ -179,7 +185,11 @@ aiRouter.post('/query', authenticate, async (req: AuthRequest, res) => {
     response: answer,
     confidence,
     sources,
-    action: research.usedExternalLlm ? 'ai_query_external_fallback' : 'ai_query',
+    action: research.usedExternalLlm
+      ? research.hasLocalSources
+        ? 'ai_query_llm_rag'
+        : 'ai_query_external_fallback'
+      : 'ai_query',
     processingTimeMs,
   });
 

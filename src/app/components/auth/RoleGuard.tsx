@@ -1,8 +1,7 @@
 import { Navigate, useLocation } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
+import { canAccessPath } from '../../lib/access';
 import type { UserRole } from '../../types';
-
-const ADMIN_ONLY_PREFIXES = ['/user-management', '/system-settings'];
 
 export function RoleGuard({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -10,8 +9,7 @@ export function RoleGuard({ children }: { children: React.ReactNode }) {
 
   if (!user) return <>{children}</>;
 
-  const isAdminOnly = ADMIN_ONLY_PREFIXES.some((p) => location.pathname.startsWith(p));
-  if (isAdminOnly && user.role !== 'admin') {
+  if (!canAccessPath(user.role, location.pathname, user.permissions)) {
     return <Navigate to="/dashboard" replace />;
   }
 

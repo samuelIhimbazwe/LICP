@@ -26,6 +26,7 @@ async function loadAuthUser(userId: string) {
       name: user.organization.name,
       mfaRequired: user.organization.mfaRequired,
       sessionTimeoutMinutes: user.organization.sessionTimeoutMinutes,
+      settings: user.organization.settings,
     }),
   };
 }

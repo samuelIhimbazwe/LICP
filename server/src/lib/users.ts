@@ -3,9 +3,13 @@ import { mergePermissions, type UserPermissions } from '../lib/permissions.js';
 
 export function serializeUser(
   user: User,
-  organization?: Pick<Organization, 'name' | 'mfaRequired' | 'sessionTimeoutMinutes'>
+  organization?: Pick<Organization, 'name' | 'mfaRequired' | 'sessionTimeoutMinutes' | 'settings'>
 ) {
-  const permissions = mergePermissions(user.role, user.permissions);
+  const orgSettings =
+    organization?.settings && typeof organization.settings === 'object'
+      ? (organization.settings as Record<string, unknown>)
+      : null;
+  const permissions = mergePermissions(user.role, user.permissions, orgSettings);
 
   return {
     id: user.id,

@@ -467,8 +467,20 @@ export function AILegalIntelligence() {
                       <CardTitle>Detailed Analysis</CardTitle>
                       <div className="flex items-center gap-2">
                         {aiResponse.usedExternalLlm && (
-                          <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200">
-                            External fallback
+                          <Badge
+                            variant="outline"
+                            className={
+                              aiResponse.hasLocalSources
+                                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                : 'bg-amber-50 text-amber-800 border-amber-200'
+                            }
+                          >
+                            {aiResponse.hasLocalSources ? 'LLM + LICP context' : 'LLM (no local matches)'}
+                          </Badge>
+                        )}
+                        {!aiResponse.usedExternalLlm && (
+                          <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200">
+                            Search summary (no LLM key)
                           </Badge>
                         )}
                         {getConfidenceBadge(
@@ -500,7 +512,9 @@ export function AILegalIntelligence() {
                       <h3 className="font-semibold mb-3">Sources & Citations</h3>
                       {aiResponse.sources.length === 0 ? (
                         <p className="text-sm text-slate-500">
-                          No matching documents or obligations were found. Add content to the Knowledge Base or refine your query.
+                          {aiResponse.usedExternalLlm
+                            ? 'No LICP records cited — this answer is general AI guidance. Verify with counsel before relying on it.'
+                            : 'No matching documents or obligations were found. Add content to the Knowledge Base or refine your query.'}
                         </p>
                       ) : (
                         <div className="space-y-3">

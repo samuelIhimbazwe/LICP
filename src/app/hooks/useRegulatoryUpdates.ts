@@ -103,6 +103,17 @@ export function useRegulatoryUpdates(category = 'all', status = 'all') {
     await load();
   };
 
+  const updateUpdate = async (
+    id: string,
+    data: { status?: string; impact?: string; isRead?: boolean }
+  ) => {
+    await apiRequest(`/regulatory/updates/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+    await load();
+  };
+
   return {
     updates,
     summary,
@@ -112,5 +123,6 @@ export function useRegulatoryUpdates(category = 'all', status = 'all') {
     reviewUpdate,
     createObligationFromUpdate,
     createUpdate,
+    updateUpdate,
   };
 }

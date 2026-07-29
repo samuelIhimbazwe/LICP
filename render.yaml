@@ -1,15 +1,22 @@
 services:
+  # API only — frontend is on Vercel
   - type: web
-    name: licp
+    name: licp-api
     runtime: node
     plan: free
     region: oregon
-    buildCommand: npm ci && npm ci --prefix server --include=dev && npx prisma generate --schema prisma/schema.postgresql.prisma && npm run build && npm run build --prefix server
+    buildCommand: npm ci && npm ci --prefix server --include=dev && npx prisma generate --schema prisma/schema.postgresql.prisma && npm run build --prefix server
     startCommand: node scripts/start-prod.mjs
     healthCheckPath: /api/v1/health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: SERVE_FRONTEND
+        value: "false"
+      - key: COOKIE_SAME_SITE
+        value: none
+      - key: VERCEL_CORS
+        value: "true"
       - key: ENABLE_DEV_AUTH_HELPERS
         value: "true"
       - key: JWT_ACCESS_SECRET
@@ -20,5 +27,9 @@ services:
         generateValue: true
       - key: DATABASE_URL
         sync: false
+      - key: CLIENT_ORIGIN
+        sync: false
       - key: EMAIL_FROM
         value: LICP <noreply@licp.local>
+      - key: GROQ_API_KEY
+        sync: false

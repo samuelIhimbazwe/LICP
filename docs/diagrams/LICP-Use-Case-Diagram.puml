@@ -1,66 +1,126 @@
 @startuml LICP_Use_Case_Diagram
-' Figure 2 — Use Case Diagram (style-matched; access synced with LICP RBAC)
+' Figure 2 — Use Case Diagram (readable layout)
+' Access synced with LICP RBAC (permissions.ts + RoleGuard)
+'
+' Design choice for clarity:
+'  - Group use cases by who may use them (fewer crossing lines)
+'  - Authenticate shown once (not «include» from every UC)
+'  - «include» / «extend» kept on the right, short dashed links only
 
 skinparam shadowing false
 skinparam backgroundColor white
 skinparam defaultFontName Arial
 skinparam packageStyle rectangle
 skinparam actorStyle awesome
+skinparam linetype ortho
+skinparam nodesep 25
+skinparam ranksep 30
+
+skinparam package {
+  BackgroundColor #F8FAFC
+  BorderColor #64748B
+  FontSize 12
+  FontStyle bold
+}
+
+skinparam usecase {
+  BackgroundColor white
+  BorderColor #1B2A4A
+  FontSize 11
+}
 
 left to right direction
 
-actor "Administrator" as Admin
+actor "Manager" as Mgr
 actor "Compliance\nOfficer" as CO
 actor "Legal\nPractitioner" as LP
-actor "Manager" as Mgr
+actor "Administrator" as Admin
 
 rectangle "Legal Intelligence & Compliance Platform (LICP)" {
-  usecase "User & Access\nManagement" as UC1
-  usecase "Obligation &\nRegulatory Management" as UC2
-  usecase "Document &\nKnowledge Management" as UC3
-  usecase "AI Legal Query" as UC4
-  usecase "Contract Management" as UC5
-  usecase "Reporting &\nAnalytics" as UC6
-  usecase "Dashboard &\nNotifications" as UC7
-  usecase "Integrations &\nSecurity Audit" as UC8
-  usecase "System Configuration" as UC9
+
+  package "A. All roles" as P_All {
+    usecase "Authenticate User\n(Login / MFA)" as UC_Auth
+    usecase "Obligation\nManagement" as UC_Oblig
+    usecase "Regulatory Updates\nMonitoring" as UC_Reg
+    usecase "Document &\nKnowledge Management" as UC_Know
+    usecase "AI Legal Query" as UC_AI
+    usecase "Contract\nManagement" as UC_Contract
+    usecase "Reporting &\nAnalytics" as UC_Report
+    usecase "Dashboard &\nMonitoring" as UC_Dash
+  }
+
+  package "B. Admin, Manager, Compliance Officer" as P_OpsAdmin {
+    usecase "Integrations &\nSecurity Audit" as UC_Integ
+  }
+
+  package "C. Administrator only" as P_Admin {
+    usecase "User & Access\nManagement" as UC_Users
+    usecase "System\nConfiguration" as UC_Config
+  }
+
+  package "Included / extended behaviour" as P_Rel {
+    usecase "Upload / Review\nEvidence" as UC_Evidence
+    usecase "Escalate Overdue\nObligation" as UC_Escalate
+    usecase "Create Obligation\nfrom Update" as UC_FromReg
+    usecase "Search Legal\nDocuments" as UC_Search
+    usecase "Retrieve Citations\n& Confidence" as UC_Cite
+    usecase "Share / E-sign\nContract Link" as UC_Share
+    usecase "Export Report\n(CSV / PDF)" as UC_Export
+    usecase "Receive\nNotifications" as UC_Notify
+    usecase "Invite User &\nAssign Role" as UC_Invite
+    usecase "Configure Org &\nSecurity Policies" as UC_Policies
+  }
 }
 
-' Administrator — full access to all modules
-Admin --> UC1
-Admin --> UC2
-Admin --> UC3
-Admin --> UC4
-Admin --> UC5
-Admin --> UC6
-Admin --> UC7
-Admin --> UC8
-Admin --> UC9
+' ===== Actor → package/group associations (clean) =====
+' All roles → package A
+Mgr --> P_All
+CO --> P_All
+LP --> P_All
+Admin --> P_All
 
-' Compliance Officer — all operational modules except user admin & system config
-CO --> UC2
-CO --> UC3
-CO --> UC4
-CO --> UC5
-CO --> UC6
-CO --> UC7
-CO --> UC8
+' Oversight roles → package B (LP has integrations view only;
+' security audit is Manager/CO/Admin — shown here as package B)
+Mgr --> P_OpsAdmin
+CO --> P_OpsAdmin
+Admin --> P_OpsAdmin
 
-' Legal Practitioner — core legal/compliance work, dashboards, reports (view), no user/security/config admin
-LP --> UC2
-LP --> UC3
-LP --> UC4
-LP --> UC5
-LP --> UC6
-LP --> UC7
+' Platform owner only → package C
+Admin --> P_Admin
 
-' Manager — oversight across operations, analytics, limited integrations/security view; no system config
-Mgr --> UC2
-Mgr --> UC3
-Mgr --> UC4
-Mgr --> UC5
-Mgr --> UC6
-Mgr --> UC7
-Mgr --> UC8
+' ===== «include» (mandatory) — short links inside boundary =====
+UC_Oblig ..> UC_Evidence : <<include>>
+UC_Know ..> UC_Search : <<include>>
+UC_AI ..> UC_Cite : <<include>>
+UC_Report ..> UC_Export : <<include>>
+UC_Dash ..> UC_Notify : <<include>>
+UC_Users ..> UC_Invite : <<include>>
+UC_Config ..> UC_Policies : <<include>>
+
+' ===== «extend» (optional / conditional) =====
+UC_Escalate ..> UC_Oblig : <<extend>>
+UC_FromReg ..> UC_Reg : <<extend>>
+UC_Share ..> UC_Contract : <<extend>>
+
+note bottom of P_All
+  **Reading the diagram**
+  • Solid line to a **package** = that role may use
+    every use case inside the package.
+  • Analytics: Manager/Admin = full; others = view/export.
+  • Authenticate applies before all secured use cases
+    (shown once; not redrawn as «include» on each UC).
+end note
+
+note bottom of P_Admin
+  Administrator = Legal team /
+  platform owner (RBAC **admin**).
+end note
+
+legend right
+  |= Line |= Meaning |
+  | Solid | Actor may use package / use cases |
+  | Dashed <<include>> | Always part of base use case |
+  | Dashed <<extend>> | Optional / conditional behaviour |
+endlegend
 
 @enduml

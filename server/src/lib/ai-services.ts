@@ -319,17 +319,30 @@ export async function searchPlatform(orgId: string, query: string): Promise<AiPl
   );
 
   const forceAudit = inventoryMode && wantsModule(q, ['audit', 'security', 'log', 'activity']);
+  const wantsAiHistory = /\b(ai history|previous quer(?:y|ies)|past quer(?:y|ies)|my (?:ai )?queries|audit log|security (?:log|event))\b/i.test(
+    q
+  );
   pushScored(
-    audits.map((a) => ({
-      id: a.id,
-      module: 'audit' as const,
-      title: a.actionDetails || a.action,
-      blob: `${a.action} ${a.actionDetails} ${a.userName ?? ''} ${a.resource} ${a.resourceType}`,
-      excerpt: `${a.userName ?? 'System'} · ${a.action} · ${a.resourceType}`,
-      meta: a.status,
-      type: 'audit',
-      forceInclude: forceAudit,
-    }))
+    audits
+      .filter((a) => {
+        const isAiQuery =
+          /^ai_query/i.test(a.action) ||
+          a.resourceType === 'ai_query' ||
+          a.resource === 'ai';
+        // Past AI questions matching the same text are not useful research sources.
+        if (isAiQuery && !wantsAiHistory) return false;
+        return true;
+      })
+      .map((a) => ({
+        id: a.id,
+        module: 'audit' as const,
+        title: a.actionDetails || a.action,
+        blob: `${a.action} ${a.actionDetails} ${a.userName ?? ''} ${a.resource} ${a.resourceType}`,
+        excerpt: `${a.userName ?? 'System'} · ${a.action} · ${a.resourceType}`,
+        meta: a.status,
+        type: 'audit',
+        forceInclude: forceAudit && !/^ai_query/i.test(a.action),
+      }))
   );
 
   // Deduplicate by module+id and keep strongest relevance
@@ -571,50 +584,75 @@ export type ResearchAnswerResult = {
   hasLocalSources: boolean;
 };
 
+function formatHitsAsLlmContext(hits: AiPlatformHit[]): string {
+  if (!hits.length) {
+    return 'No LICP platform records matched this query by keyword search.';
+  }
+  return hits
+    .slice(0, 15)
+    .map((h, i) => {
+      const lines = [
+        `[${i + 1}] module=${h.module} | id=${h.id} | title=${h.title}`,
+        h.meta ? `meta=${h.meta}` : null,
+        h.type ? `type=${h.type}` : null,
+        h.jurisdiction ? `jurisdiction=${h.jurisdiction}` : null,
+        `relevance=${h.relevance}`,
+        `excerpt=${h.excerpt || '(none)'}`,
+      ].filter(Boolean);
+      return lines.join('\n');
+    })
+    .join('\n\n');
+}
+
 /**
- * Prefer LICP platform data. External LLM (Groq/OpenAI) is used only when
- * search across the whole organisation finds no matching records.
+ * Full LLM answers with RAG: platform search results are context for the model.
+ * Falls back to a structured search summary only when no LLM key is configured
+ * or the LLM request fails.
  */
 export async function buildResearchAnswerWithLlm(
   query: string,
   hits: AiPlatformHit[]
 ): Promise<ResearchAnswerResult> {
   const hasLocalSources = hits.length > 0;
+  const context = formatHitsAsLlmContext(hits);
 
-  if (hasLocalSources) {
-    return {
-      answer: buildResearchAnswerFromHits(query, hits),
-      usedExternalLlm: false,
-      hasLocalSources: true,
-    };
-  }
+  const system = [
+    'You are the AI Legal Intelligence assistant for LICP (Legal Intelligence & Compliance Platform).',
+    'Answer the user question directly and helpfully — like a capable legal/ops AI assistant, not a raw search engine.',
+    'Use the LICP CONTEXT block when it is relevant. Cite record titles from context when you rely on them.',
+    'If the question is about whether integrations/APIs are real vs demo: be honest. In this prototype, connector status may show "connected" and sync counts even when sync uses mock/demo feeds; a live feed requires a configured reachable endpoint (and API key when needed). Do not claim third-party APIs are live unless context clearly shows a successful live endpoint sync.',
+    'If context is empty or irrelevant, say so and still answer generally (Rwanda / EAC legal context when useful), with a short disclaimer that it is not grounded in organisation records.',
+    'Do not invent statute numbers, case citations, or fake sync metrics.',
+    'Prefer clear prose or short bullets. Avoid dumping numbered search results unless the user asked for a list.',
+    'Keep answers concise (roughly under 350 words).',
+  ].join(' ');
 
-  const llm = await callOptionalLlm(
-    [
-      'You are a legal research assistant for LICP (Legal Intelligence & Compliance Platform).',
-      'The organisation platform had NO matching records (documents, obligations, contracts, users, integrations, etc.).',
-      'Provide a short, practical general answer based on widely known legal principles.',
-      'Prefer Rwanda / EAC context when relevant.',
-      'Start with a clear disclaimer that this is general guidance only, not grounded in the organisation\'s LICP data, and counsel should verify.',
-      'Do not invent case citations or statute numbers you are unsure of.',
-      'Be concise (under 250 words).',
-    ].join(' '),
-    `Question: ${query}`
-  );
+  const userMsg = [
+    `QUESTION:\n${query.trim()}`,
+    '',
+    'LICP CONTEXT (retrieved from the organisation database — may be incomplete):',
+    context,
+  ].join('\n');
+
+  const llm = await callOptionalLlm(system, userMsg, 1200);
 
   if (llm) {
-    const disclaimer =
-      '⚠️ General guidance (no matching records found across your LICP system).\n\n';
-    const answer = llm.startsWith('⚠️') || /disclaimer|general guidance/i.test(llm.slice(0, 120))
-      ? llm
-      : disclaimer + llm;
-    return { answer, usedExternalLlm: true, hasLocalSources: false };
+    if (!hasLocalSources) {
+      const disclaimer =
+        '⚠️ General guidance (no matching records found across your LICP system).\n\n';
+      const answer =
+        llm.startsWith('⚠️') || /disclaimer|general guidance/i.test(llm.slice(0, 120))
+          ? llm
+          : disclaimer + llm;
+      return { answer, usedExternalLlm: true, hasLocalSources: false };
+    }
+    return { answer: llm, usedExternalLlm: true, hasLocalSources: true };
   }
 
   return {
     answer: buildResearchAnswerFromHits(query, hits),
     usedExternalLlm: false,
-    hasLocalSources: false,
+    hasLocalSources,
   };
 }
 

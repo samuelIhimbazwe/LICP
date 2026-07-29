@@ -35,14 +35,28 @@ import { checkRateLimit } from '../lib/rate-limit.js';
 
 export const authRouter = Router();
 
+function cookieBase() {
+  return {
+    httpOnly: config.cookie.httpOnly,
+    secure: config.cookie.secure,
+    sameSite: config.cookie.sameSite,
+    path: config.cookie.path,
+  };
+}
+
 function setAuthCookies(res: import('express').Response, accessToken: string, refreshToken: string) {
-  const secure = config.nodeEnv === 'production';
-  const opts = { httpOnly: true, secure, sameSite: 'lax' as const, path: '/' };
+  const opts = cookieBase();
   res.cookie('accessToken', accessToken, { ...opts, maxAge: config.jwt.accessMinutes * 60 * 1000 });
   res.cookie('refreshToken', refreshToken, {
     ...opts,
     maxAge: config.jwt.refreshDays * 24 * 60 * 60 * 1000,
   });
+}
+
+function clearAuthCookies(res: import('express').Response) {
+  const opts = cookieBase();
+  res.clearCookie('accessToken', opts);
+  res.clearCookie('refreshToken', opts);
 }
 
 async function createSession(userId: string, req: AuthRequest) {
@@ -276,8 +290,7 @@ authRouter.post('/logout', authenticateAllowUnverified, async (req: AuthRequest,
     where: { userId: user.id, isActive: true },
     data: { isActive: false },
   });
-  res.clearCookie('accessToken');
-  res.clearCookie('refreshToken');
+  clearAuthCookies(res);
   await writeAuditLog({
     organizationId: user.organizationId,
     userId: user.id,

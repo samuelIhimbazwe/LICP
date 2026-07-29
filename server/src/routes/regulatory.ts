@@ -174,6 +174,7 @@ regulatoryRouter.patch('/updates/:id', canEdit, async (req: AuthRequest, res) =>
       status: z
         .enum(['pending_review', 'reviewed', 'action_required', 'implemented', 'not_applicable'])
         .optional(),
+      impact: z.enum(['critical', 'high', 'medium', 'low', 'minimal']).optional(),
       isRead: z.boolean().optional(),
       knowledgeDocumentId: z.string().optional(),
     })
@@ -191,6 +192,7 @@ regulatoryRouter.patch('/updates/:id', canEdit, async (req: AuthRequest, res) =>
     where: { id },
     data: {
       ...(body.status ? { status: body.status } : {}),
+      ...(body.impact ? { impact: body.impact } : {}),
       ...(body.isRead !== undefined ? { isRead: body.isRead } : {}),
       ...(body.knowledgeDocumentId !== undefined
         ? { knowledgeDocumentId: body.knowledgeDocumentId }

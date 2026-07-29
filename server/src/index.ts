@@ -59,7 +59,18 @@ app.use((_req, res, next) => {
 app.set('trust proxy', 1);
 app.use(
   cors({
-    origin: config.clientOrigin,
+    origin(origin, callback) {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      const normalized = origin.replace(/\/$/, '');
+      const listed =
+        config.clientOrigins.includes(normalized) || config.clientOrigins.includes('*');
+      const vercelPreview =
+        process.env.VERCEL_CORS === 'true' && /\.vercel\.app$/i.test(normalized);
+      callback(null, listed || vercelPreview);
+    },
     credentials: true,
   })
 );
@@ -98,7 +109,7 @@ app.use('/api/v1/org', orgRouter);
 app.use('/api/v1/files', filesRouter);
 app.use('/api/v1/public/share', shareRouter);
 
-if (config.nodeEnv === 'production') {
+if (config.nodeEnv === 'production' && config.serveFrontend) {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const distPath = path.resolve(__dirname, '../../dist');
   app.use(express.static(distPath));

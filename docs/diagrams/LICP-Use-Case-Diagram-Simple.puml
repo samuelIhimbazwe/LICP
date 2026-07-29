@@ -1,61 +1,88 @@
 @startuml LICP_Use_Case_Simple
-' Compact overview (Figure 2 alternative) — current LICP
+' Compact / presentation version — same RBAC, maximum readability
+' Prefer this figure in the report if the full diagram still looks dense.
 
-scale 0.85
 skinparam shadowing false
 skinparam backgroundColor white
+skinparam defaultFontName Arial
 skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam linetype ortho
+
+skinparam package {
+  BackgroundColor #F8FAFC
+  BorderColor #64748B
+  FontStyle bold
+}
+
+skinparam usecase {
+  BackgroundColor white
+  BorderColor #1B2A4A
+}
 
 left to right direction
 
-actor "Administrator" as Admin
-actor "Compliance\nOfficer" as CO
-actor "Legal\nPractitioner" as LP
 actor "Manager" as Mgr
-actor "External\nIntegrations" as Ext
+actor "Compliance\nOfficer" as CO
 
-rectangle "LICP System" {
-  usecase "Login / MFA /\nInvitation onboarding" as UC1
-  usecase "Manage users &\naccess control" as UC2
-  usecase "Track compliance\nobligations & evidence" as UC3
-  usecase "Review regulatory\nupdates" as UC4
-  usecase "Legal knowledge &\ncontract lifecycle" as UC5
-  usecase "Analytics &\nprofessional PDF reports" as UC6
-  usecase "AI legal intelligence" as UC7
-  usecase "Configure &\nsync integrations" as UC8
-  usecase "Notifications &\nrole dashboards" as UC9
-  usecase "Security audit\n& system settings" as UC10
+actor "Legal\nPractitioner" as LP
+actor "Administrator" as Admin
+
+rectangle "LICP" {
+
+  package "All roles" as A {
+    usecase "1. Authenticate\n(Login / MFA)" as U1
+    usecase "2. Obligation\nManagement" as U2
+    usecase "3. Regulatory Updates\nMonitoring" as U3
+    usecase "4. Document &\nKnowledge" as U4
+    usecase "5. AI Legal Query" as U5
+    usecase "6. Contract\nManagement" as U6
+    usecase "7. Reporting &\nAnalytics" as U7
+    usecase "8. Dashboard &\nMonitoring" as U8
+  }
+
+  package "Admin / Manager / CO" as B {
+    usecase "9. Integrations &\nSecurity Audit" as U9
+  }
+
+  package "Administrator only" as C {
+    usecase "10. User & Access\nManagement" as U10
+    usecase "11. System\nConfiguration" as U11
+  }
+
+  ' Side relationships (no actor lines here)
+  usecase "Upload Evidence" as E1
+  usecase "Escalate Overdue" as E2
+  usecase "Create Obligation\nfrom Update" as E3
+  usecase "Export Report" as E4
+  usecase "Notifications" as E5
 }
 
-Admin --> UC1
-Admin --> UC2
-Admin --> UC6
-Admin --> UC8
-Admin --> UC9
-Admin --> UC10
+Mgr --> A
+CO --> A
+LP --> A
+Admin --> A
 
-CO --> UC1
-CO --> UC3
-CO --> UC4
-CO --> UC5
-CO --> UC6
-CO --> UC7
-CO --> UC9
+Mgr --> B
+CO --> B
+Admin --> B
 
-LP --> UC1
-LP --> UC4
-LP --> UC5
-LP --> UC7
-LP --> UC9
+Admin --> C
 
-Mgr --> UC1
-Mgr --> UC3
-Mgr --> UC4
-Mgr --> UC5
-Mgr --> UC6
-Mgr --> UC7
-Mgr --> UC9
+U2 ..> E1 : <<include>>
+U7 ..> E4 : <<include>>
+U8 ..> E5 : <<include>>
+E2 ..> U2 : <<extend>>
+E3 ..> U3 : <<extend>>
 
-Ext --> UC8
+note right of C
+  Admin = Legal team /
+  platform owner.
+end note
+
+note bottom of A
+  Line to a **package** = access to all
+  use cases in that package.
+end note
 
 @enduml

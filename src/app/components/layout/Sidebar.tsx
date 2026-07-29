@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { cn } from '../ui/utils';
 import { useNavigate, useLocation } from 'react-router';
 import { BrandMark } from './BrandMark';
+import { canAccessPath, getDefaultPermissions } from '../../lib/access';
 import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard,
@@ -83,7 +84,16 @@ export function Sidebar({ className }: SidebarProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const sections = buildSections(user?.role);
+  const permissions = user?.permissions ?? (user?.role ? getDefaultPermissions(user.role) : undefined);
+
+  const sections = useMemo(() => {
+    const raw = buildSections(user?.role);
+    return raw
+      .map((section) => ({
+        items: section.items.filter((item) => canAccessPath(user?.role, item.path, permissions)),
+      }))
+      .filter((section) => section.items.length > 0);
+  }, [user?.role, permissions]);
 
   const isActive = (path: string) => {
     if (path === '/dashboard') return location.pathname === '/dashboard';

@@ -41,7 +41,8 @@ usersRouter.get('/export', requireAdmin, async (req: AuthRequest, res) => {
 });
 
 usersRouter.get('/org-structure', requireAdmin, async (req: AuthRequest, res) => {
-  const org = req.user!.db.organization;
+  const orgRow = await prisma.organization.findUnique({ where: { id: req.user!.db.organizationId } });
+  const org = orgRow ?? req.user!.db.organization;
   const users = await prisma.user.findMany({
     where: { organizationId: org.id },
     select: { id: true, department: true, role: true, fullName: true },
@@ -56,6 +57,9 @@ usersRouter.get('/org-structure', requireAdmin, async (req: AuthRequest, res) =>
     }
     deptMap.set(dept, entry);
   }
+
+  const settings = (org.settings ?? {}) as Record<string, unknown>;
+  const extraUnits = Array.isArray(settings.extraOrgUnits) ? (settings.extraOrgUnits as Array<Record<string, unknown>>) : [];
 
   const units = [
     {
@@ -76,9 +80,57 @@ usersRouter.get('/org-structure', requireAdmin, async (req: AuthRequest, res) =>
       managerName: info.managerName,
       createdAt: org.createdAt.toISOString(),
     })),
+    ...extraUnits.map((u) => ({
+      id: String(u.id),
+      name: String(u.name),
+      type: String(u.type ?? 'department'),
+      userCount: Number(u.userCount ?? 0),
+      parentId: (u.parentId as string | null) ?? org.id,
+      managerName: u.managerName ? String(u.managerName) : undefined,
+      createdAt: String(u.createdAt ?? new Date().toISOString()),
+    })),
   ];
 
   res.json({ units });
+});
+
+usersRouter.post('/org-structure', requireAdmin, async (req: AuthRequest, res) => {
+  const body = z
+    .object({
+      name: z.string().min(1),
+      type: z.enum(['department', 'business_unit', 'team']).default('department'),
+      managerName: z.string().optional(),
+    })
+    .parse(req.body);
+
+  const org = await prisma.organization.findUnique({ where: { id: req.user!.db.organizationId } });
+  if (!org) {
+    res.status(404).json({ error: 'Organization not found.' });
+    return;
+  }
+
+  const settings = (org.settings ?? {}) as Record<string, unknown>;
+  const extraUnits = Array.isArray(settings.extraOrgUnits)
+    ? [...(settings.extraOrgUnits as Array<Record<string, unknown>>)]
+    : [];
+
+  const unit = {
+    id: `unit-${Date.now()}`,
+    name: body.name,
+    type: body.type,
+    userCount: 0,
+    parentId: org.id,
+    managerName: body.managerName,
+    createdAt: new Date().toISOString(),
+  };
+  extraUnits.push(unit);
+
+  await prisma.organization.update({
+    where: { id: org.id },
+    data: { settings: { ...settings, extraOrgUnits: extraUnits } },
+  });
+
+  res.status(201).json({ unit });
 });
 
 usersRouter.get('/activity', requireAdmin, async (req: AuthRequest, res) => {
@@ -102,21 +154,94 @@ usersRouter.get('/activity', requireAdmin, async (req: AuthRequest, res) => {
 });
 
 usersRouter.get('/permissions-matrix', requireAdmin, async (req: AuthRequest, res) => {
+  const org = await prisma.organization.findUnique({ where: { id: req.user!.db.organizationId } });
   const orgId = req.user!.db.organizationId;
+  const settings = (org?.settings ?? {}) as Record<string, unknown>;
+  const overrides = (settings.rolePermissionOverrides ?? {}) as Partial<Record<UserRole, UserPermissions>>;
   const users = await prisma.user.findMany({
     where: { organizationId: orgId },
     select: { role: true },
   });
   const roles: UserRole[] = ['admin', 'manager', 'compliance_officer', 'legal_practitioner'];
-  const matrix = roles.map((role) => ({
+  const matrix = roles.map((role) => {
+    const custom = overrides[role];
+    const permissions = custom ?? (getDefaultPermissions(role) as UserPermissions);
+    return {
+      roleId: role,
+      roleName: getRoleLabel(role),
+      description: custom
+        ? `Custom permissions for ${getRoleLabel(role)}`
+        : `Default permissions for ${getRoleLabel(role)}`,
+      userCount: users.filter((u) => u.role === role).length,
+      isCustom: Boolean(custom),
+      permissions,
+    };
+  });
+  res.json({ matrix });
+});
+
+usersRouter.put('/permissions-matrix/:role', requireAdmin, async (req: AuthRequest, res) => {
+  const role = String(req.params.role) as UserRole;
+  const allowed: UserRole[] = ['admin', 'manager', 'compliance_officer', 'legal_practitioner'];
+  if (!allowed.includes(role)) {
+    res.status(400).json({ error: 'Invalid role.' });
+    return;
+  }
+
+  const body = z
+    .object({
+      modules: z.record(z.enum(['none', 'view', 'edit', 'full'])),
+      actions: z.record(z.boolean()),
+    })
+    .parse(req.body);
+
+  const permissions: UserPermissions = {
+    modules: body.modules as UserPermissions['modules'],
+    actions: body.actions as UserPermissions['actions'],
+  };
+
+  const orgId = req.user!.db.organizationId;
+  const org = await prisma.organization.findUnique({ where: { id: orgId } });
+  if (!org) {
+    res.status(404).json({ error: 'Organization not found.' });
+    return;
+  }
+
+  const settings = (org.settings ?? {}) as Record<string, unknown>;
+  const overrides = {
+    ...((settings.rolePermissionOverrides ?? {}) as Record<string, unknown>),
+    [role]: permissions,
+  };
+
+  await prisma.organization.update({
+    where: { id: orgId },
+    data: { settings: { ...settings, rolePermissionOverrides: overrides } },
+  });
+
+  await prisma.user.updateMany({
+    where: { organizationId: orgId, role },
+    data: { permissions },
+  });
+
+  await writeAuditLog({
+    organizationId: orgId,
+    userId: req.user!.db.id,
+    userName: req.user!.db.fullName,
+    userRole: req.user!.db.role,
+    action: 'role_permissions_updated',
+    resource: 'permissions',
+    resourceId: role,
+    resourceType: 'role',
+    actionDetails: `Updated permission matrix for ${getRoleLabel(role)}`,
+    req,
+  });
+
+  res.json({
     roleId: role,
     roleName: getRoleLabel(role),
-    description: `Default permissions for ${getRoleLabel(role)}`,
-    userCount: users.filter((u) => u.role === role).length,
-    isCustom: false,
-    permissions: getDefaultPermissions(role) as UserPermissions,
-  }));
-  res.json({ matrix });
+    permissions,
+    isCustom: true,
+  });
 });
 
 usersRouter.get('/access-requests', requireAdmin, async (req: AuthRequest, res) => {

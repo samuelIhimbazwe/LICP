@@ -1,12 +1,15 @@
-# Deploy LICP to Render (free web service)
+# Deploy LICP to Render (single service: API + UI)
 
-This app is a single Node service: Express API + built Vite UI on one URL.
+> Prefer split hosting? See **[DEPLOY_NEON_RENDER_VERCEL.md](./DEPLOY_NEON_RENDER_VERCEL.md)**  
+> (Neon DB + Render API + Vercel web).
+
+This older path runs Express + built Vite UI on **one** Render URL.
 
 ## What you need
 
-1. [GitHub](https://github.com) account (you have this)
-2. [Render](https://render.com) account (sign up with GitHub)
-3. Free Postgres from [Neon](https://neon.tech) (Render’s free Postgres is limited)
+1. [GitHub](https://github.com) account
+2. [Render](https://render.com) account
+3. Free Postgres from [Neon](https://neon.tech)
 
 ## 1. Push this project to GitHub
 

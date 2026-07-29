@@ -1,5 +1,10 @@
 export type UserRole = 'legal_practitioner' | 'compliance_officer' | 'manager' | 'admin';
 
+export interface UserPermissions {
+  modules: Record<string, 'none' | 'view' | 'edit' | 'full'>;
+  actions: Record<string, boolean>;
+}
+
 export interface User {
   id: string;
   fullName: string;
@@ -13,6 +18,7 @@ export interface User {
   emailVerified?: boolean;
   sessionTimeoutMinutes?: number;
   lastLogin?: Date;
+  permissions?: UserPermissions;
 }
 
 export interface ComplianceItem {

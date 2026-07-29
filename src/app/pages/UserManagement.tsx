@@ -158,6 +158,13 @@ export function UserManagement() {
   const [bulkImports, setBulkImports] = useState<BulkImportJob[]>([]);
   const [loadingAccessRequests, setLoadingAccessRequests] = useState(true);
   const [loadingBulkImports, setLoadingBulkImports] = useState(true);
+  const [permDialogOpen, setPermDialogOpen] = useState(false);
+  const [editingMatrix, setEditingMatrix] = useState<(typeof permissionMatrix)[0] | null>(null);
+  const [permDraft, setPermDraft] = useState<ApiUser['permissions'] | null>(null);
+  const [savingPerms, setSavingPerms] = useState(false);
+  const [addUnitOpen, setAddUnitOpen] = useState(false);
+  const [unitForm, setUnitForm] = useState({ name: '', type: 'department', managerName: '' });
+  const [savingUnit, setSavingUnit] = useState(false);
 
   const loadUsers = useCallback(async () => {
     setLoadingUsers(true);
@@ -292,6 +299,60 @@ export function UserManagement() {
     loadAccessRequests();
     loadBulkImports();
   }, [loadUsers, loadSessions, loadAuditLogs, loadLoginActivity, loadOrgStructure, loadPermissionMatrix, loadAccessRequests, loadBulkImports]);
+
+  const openEditPermissions = (matrix: (typeof permissionMatrix)[0]) => {
+    setEditingMatrix(matrix);
+    setPermDraft({
+      modules: { ...matrix.permissions.modules },
+      actions: { ...matrix.permissions.actions },
+    });
+    setPermDialogOpen(true);
+  };
+
+  const handleSavePermissions = async () => {
+    if (!editingMatrix || !permDraft) return;
+    setSavingPerms(true);
+    try {
+      await apiRequest(`/users/permissions-matrix/${editingMatrix.roleId}`, {
+        method: 'PUT',
+        body: JSON.stringify(permDraft),
+      });
+      toast.success(`Permissions updated for ${editingMatrix.roleName}.`);
+      setPermDialogOpen(false);
+      await loadPermissionMatrix();
+      await loadUsers();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to save permissions.');
+    } finally {
+      setSavingPerms(false);
+    }
+  };
+
+  const handleAddUnit = async () => {
+    if (!unitForm.name.trim()) {
+      toast.error('Unit name is required.');
+      return;
+    }
+    setSavingUnit(true);
+    try {
+      await apiRequest('/users/org-structure', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: unitForm.name.trim(),
+          type: unitForm.type,
+          managerName: unitForm.managerName.trim() || undefined,
+        }),
+      });
+      toast.success(`Unit "${unitForm.name.trim()}" added.`);
+      setUnitForm({ name: '', type: 'department', managerName: '' });
+      setAddUnitOpen(false);
+      await loadOrgStructure();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to add unit.');
+    } finally {
+      setSavingUnit(false);
+    }
+  };
 
   const handleExportAudit = () => {
     window.open(`${API_BASE}/audit/logs/export`, '_blank');
@@ -659,7 +720,7 @@ export function UserManagement() {
                   <CardTitle>Organization Structure</CardTitle>
                   <CardDescription>Hierarchical view of business units and departments</CardDescription>
                 </div>
-                <Button>
+                <Button onClick={() => setAddUnitOpen(true)}>
                   <Building className="mr-2 h-4 w-4" />
                   Add Unit
                 </Button>
@@ -706,7 +767,12 @@ export function UserManagement() {
                   <CardTitle>Permission Matrix</CardTitle>
                   <CardDescription>Role-based access control configuration</CardDescription>
                 </div>
-                <Button>
+                <Button
+                  onClick={() => {
+                    if (permissionMatrix[0]) openEditPermissions(permissionMatrix[0]);
+                    else toast.info('Permission matrix is still loading.');
+                  }}
+                >
                   <Settings className="mr-2 h-4 w-4" />
                   Edit Matrix
                 </Button>
@@ -728,7 +794,9 @@ export function UserManagement() {
                           {matrix.isCustom && <Badge className="bg-purple-100 text-purple-800">Custom</Badge>}
                         </div>
                       </div>
-                      <Button variant="outline" size="sm">Edit Permissions</Button>
+                      <Button variant="outline" size="sm" onClick={() => openEditPermissions(matrix)}>
+                        Edit Permissions
+                      </Button>
                     </div>
                     <Separator className="my-4" />
                     <div className="space-y-4">
@@ -1183,6 +1251,122 @@ export function UserManagement() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleSaveEditUser} disabled={savingEdit}>Save changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={permDialogOpen} onOpenChange={setPermDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Permissions — {editingMatrix?.roleName}</DialogTitle>
+            <DialogDescription>
+              Changes apply to all users with this role and update the organization permission matrix.
+            </DialogDescription>
+          </DialogHeader>
+          {permDraft && (
+            <div className="space-y-6">
+              <div>
+                <Label className="text-base mb-2 block">Module Access</Label>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {Object.entries(permDraft.modules).map(([module, level]) => (
+                    <div key={module} className="flex items-center justify-between border rounded p-2 gap-2">
+                      <span className="text-sm capitalize">{module.replace(/([A-Z])/g, ' $1').trim()}</span>
+                      <Select
+                        value={level}
+                        onValueChange={(v) =>
+                          setPermDraft((d) =>
+                            d ? { ...d, modules: { ...d.modules, [module]: v } } : d
+                          )
+                        }
+                      >
+                        <SelectTrigger className="w-28 h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
+                          <SelectItem value="view">View</SelectItem>
+                          <SelectItem value="edit">Edit</SelectItem>
+                          <SelectItem value="full">Full</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <Separator />
+              <div>
+                <Label className="text-base mb-2 block">Action Permissions</Label>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {Object.entries(permDraft.actions).map(([action, allowed]) => (
+                    <div key={action} className="flex items-center justify-between border rounded p-2">
+                      <span className="text-sm capitalize">{action.replace(/([A-Z])/g, ' $1').trim()}</span>
+                      <Switch
+                        checked={allowed}
+                        onCheckedChange={(checked) =>
+                          setPermDraft((d) =>
+                            d ? { ...d, actions: { ...d.actions, [action]: checked } } : d
+                          )
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPermDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSavePermissions} disabled={savingPerms}>
+              {savingPerms ? 'Saving…' : 'Save permissions'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={addUnitOpen} onOpenChange={setAddUnitOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Organization Unit</DialogTitle>
+            <DialogDescription>Add a department, business unit, or team under the organization.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Name</Label>
+              <Input
+                className="mt-1"
+                placeholder="e.g. Corporate Legal"
+                value={unitForm.name}
+                onChange={(e) => setUnitForm((f) => ({ ...f, name: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label>Type</Label>
+              <Select value={unitForm.type} onValueChange={(v) => setUnitForm((f) => ({ ...f, type: v }))}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="department">Department</SelectItem>
+                  <SelectItem value="business_unit">Business unit</SelectItem>
+                  <SelectItem value="team">Team</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Manager (optional)</Label>
+              <Input
+                className="mt-1"
+                placeholder="Manager name"
+                value={unitForm.managerName}
+                onChange={(e) => setUnitForm((f) => ({ ...f, managerName: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddUnitOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddUnit} disabled={savingUnit}>
+              {savingUnit ? 'Adding…' : 'Add Unit'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
