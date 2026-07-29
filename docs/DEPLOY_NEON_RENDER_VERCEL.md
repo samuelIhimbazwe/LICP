@@ -71,7 +71,13 @@ Schema + seed run automatically on first Render start (`scripts/start-prod.mjs`)
 | `JWT_REFRESH_SECRET` | Generate |
 | `JWT_PENDING_SECRET` | Generate |
 | `ENABLE_DEV_AUTH_HELPERS` | `true` (demo MFA) |
-| `EMAIL_FROM` | `LICP <noreply@licp.local>` |
+| `SMTP_HOST` | `smtp.gmail.com` |
+| `SMTP_PORT` | `587` |
+| `SMTP_ENCRYPTION` | `tls` |
+| `SMTP_USER` | your Gmail address |
+| `SMTP_PASS` | Gmail App Password (not your normal password) |
+| `EMAIL_FROM` | `LICP <your-gmail@gmail.com>` |
+| `USE_ETHEREAL_EMAIL` | `false` |
 | `GROQ_API_KEY` | optional (AI LLM) |
 
 4. Deploy → wait until healthy → open:

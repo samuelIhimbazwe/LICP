@@ -29,7 +29,19 @@ services:
         sync: false
       - key: CLIENT_ORIGIN
         sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_ENCRYPTION
+        value: tls
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
       - key: EMAIL_FROM
-        value: LICP <noreply@licp.local>
+        sync: false
+      - key: USE_ETHEREAL_EMAIL
+        value: "false"
       - key: GROQ_API_KEY
         sync: false
