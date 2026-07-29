@@ -48,6 +48,7 @@ export function RegulatoryUpdates() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [selectedImpact, setSelectedImpact] = useState<string>('all');
   const [selectedUpdate, setSelectedUpdate] = useState<string | null>(null);
   const [showWorkflow, setShowWorkflow] = useState(false);
   const [subscriptions, setSubscriptions] = useState(updateSubscriptions);
@@ -80,6 +81,12 @@ export function RegulatoryUpdates() {
     if (updateId && updates.some((u) => u.id === updateId)) {
       setSelectedUpdate(updateId);
     }
+    const impact = searchParams.get('impact');
+    if (impact === 'high' || impact === 'medium' || impact === 'low' || impact === 'all') {
+      setSelectedImpact(impact);
+    }
+    const status = searchParams.get('status');
+    if (status) setSelectedStatus(status);
   }, [searchParams, updates]);
 
   const clearUpdateParam = () => {
@@ -98,8 +105,9 @@ export function RegulatoryUpdates() {
   });
   const [savingUpdate, setSavingUpdate] = useState(false);
 
-  const filteredUpdates = updates ?? [];
-
+  const filteredUpdates = (updates ?? []).filter(
+    (u) => selectedImpact === 'all' || u.impact === selectedImpact
+  );
   const getCategoryBadge = (category: string) => {
     const badges: Record<string, { label: string; className: string }> = {
       new_law: { label: 'New Law', className: 'bg-brand/10 text-brand hover:bg-brand/10' },

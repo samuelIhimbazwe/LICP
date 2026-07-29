@@ -265,3 +265,306 @@ export function computeExecutiveSummary(
     },
   };
 }
+
+export type RagStatus = 'green' | 'amber' | 'red' | 'neutral';
+
+export interface HeadlineKpi {
+  id: string;
+  label: string;
+  value: number;
+  displayValue: string;
+  target?: number;
+  targetLabel?: string;
+  delta?: number;
+  deltaLabel?: string;
+  trend: 'up' | 'down' | 'stable';
+  /** When true, "up" is bad (e.g. overdue rising). */
+  invertTrend?: boolean;
+  status: RagStatus;
+  href?: string;
+  sparkline?: number[];
+}
+
+function ragHigherIsBetter(value: number, greenAt: number, amberAt: number): RagStatus {
+  if (value >= greenAt) return 'green';
+  if (value >= amberAt) return 'amber';
+  return 'red';
+}
+
+function ragLowerIsBetter(value: number, greenMax: number, amberMax: number): RagStatus {
+  if (value <= greenMax) return 'green';
+  if (value <= amberMax) return 'amber';
+  return 'red';
+}
+
+function deltaTrend(delta: number): 'up' | 'down' | 'stable' {
+  if (delta > 0.5) return 'up';
+  if (delta < -0.5) return 'down';
+  return 'stable';
+}
+
+/** World-class headline KPIs for Analytics Overview (targets + MoM delta + RAG). */
+export function computeHeadlineKpis(
+  obligations: Array<{ status: ObligationStatus; deadline: Date; updatedAt: Date; createdAt: Date }>,
+  updates: Array<{ impact: string; status: string; publishedAt: Date }>,
+  evidenceCount: number
+): HeadlineKpi[] {
+  const compliance = computeAnalyticsCompliance(obligations);
+  const regulatory = computeRegulatoryMetrics(updates);
+  const readiness = computeAuditReadiness(obligations, evidenceCount);
+  const trends = computeObligationTrends(obligations);
+  const last = trends[trends.length - 1];
+  const prev = trends[trends.length - 2];
+
+  const scoreDelta = last && prev ? Math.round((last.completionRate - prev.completionRate) * 10) / 10 : 0;
+  const overdueDelta = last && prev ? last.overdue - prev.overdue : 0;
+  const sparkScore = trends.map((t) => t.completionRate);
+  const sparkOverdue = trends.map((t) => t.overdue);
+
+  const highOpen = updates.filter(
+    (u) => u.impact === 'high' && u.status !== 'implemented' && u.status !== 'reviewed'
+  ).length;
+
+  return [
+    {
+      id: 'compliance-score',
+      label: 'Compliance Score',
+      value: compliance.complianceScore,
+      displayValue: `${compliance.complianceScore}%`,
+      target: 90,
+      targetLabel: 'Target 90%',
+      delta: scoreDelta,
+      deltaLabel: 'vs prior month',
+      trend: deltaTrend(scoreDelta),
+      status: ragHigherIsBetter(compliance.complianceScore, 90, 80),
+      href: '/compliance-tracking',
+      sparkline: sparkScore,
+    },
+    {
+      id: 'overdue',
+      label: 'Overdue Obligations',
+      value: compliance.overdueObligations,
+      displayValue: String(compliance.overdueObligations),
+      target: 0,
+      targetLabel: 'Target 0',
+      delta: overdueDelta,
+      deltaLabel: 'vs prior month',
+      trend: deltaTrend(overdueDelta),
+      invertTrend: true,
+      status: ragLowerIsBetter(compliance.overdueObligations, 0, 4),
+      href: '/compliance-tracking?status=non_compliant',
+      sparkline: sparkOverdue,
+    },
+    {
+      id: 'due-30',
+      label: 'Due in 30 Days',
+      value: compliance.upcomingObligations,
+      displayValue: String(compliance.upcomingObligations),
+      target: undefined,
+      targetLabel: 'Watchlist',
+      delta: undefined,
+      trend: compliance.upcomingObligations > 10 ? 'up' : 'stable',
+      invertTrend: true,
+      status: ragLowerIsBetter(compliance.upcomingObligations, 5, 12),
+      href: '/compliance-tracking',
+    },
+    {
+      id: 'completion-rate',
+      label: 'Completion Rate',
+      value: compliance.completionRate,
+      displayValue: `${compliance.completionRate}%`,
+      target: 85,
+      targetLabel: 'Target 85%',
+      delta: scoreDelta,
+      deltaLabel: 'vs prior month',
+      trend: deltaTrend(scoreDelta),
+      status: ragHigherIsBetter(compliance.completionRate, 85, 70),
+      href: '/analytics?tab=compliance',
+      sparkline: sparkScore,
+    },
+    {
+      id: 'high-impact',
+      label: 'High-Impact Updates Open',
+      value: highOpen,
+      displayValue: String(highOpen),
+      target: 0,
+      targetLabel: 'Target 0 open',
+      delta: undefined,
+      trend: highOpen > 3 ? 'up' : highOpen === 0 ? 'stable' : 'up',
+      invertTrend: true,
+      status: ragLowerIsBetter(highOpen, 0, 2),
+      href: '/regulatory-updates?impact=high',
+    },
+    {
+      id: 'audit-readiness',
+      label: 'Audit Readiness',
+      value: readiness.overallReadiness,
+      displayValue: `${readiness.overallReadiness}%`,
+      target: 85,
+      targetLabel: 'Target 85%',
+      delta: undefined,
+      trend: readiness.criticalIssues > 0 ? 'down' : 'stable',
+      status: ragHigherIsBetter(readiness.overallReadiness, 85, 70),
+      href: '/analytics?tab=audit',
+    },
+  ];
+}
+
+export function computeStatusMix(
+  compliance: ReturnType<typeof computeAnalyticsCompliance>
+) {
+  return [
+    { name: 'Compliant', count: compliance.completedObligations },
+    { name: 'Upcoming', count: compliance.upcomingObligations },
+    { name: 'Overdue', count: compliance.overdueObligations },
+    {
+      name: 'Other',
+      count: Math.max(
+        0,
+        compliance.totalObligations -
+          compliance.completedObligations -
+          compliance.upcomingObligations -
+          compliance.overdueObligations
+      ),
+    },
+  ].filter((r) => r.count > 0);
+}
+
+export interface ExceptionRow {
+  id: string;
+  type: 'obligation' | 'regulatory' | 'contract' | 'audit';
+  severity: 'critical' | 'high' | 'medium';
+  title: string;
+  detail: string;
+  href: string;
+}
+
+export function computeExceptions(input: {
+  obligations: Array<{
+    id: string;
+    title: string;
+    status: ObligationStatus;
+    deadline: Date;
+    assignedTo: string;
+  }>;
+  updates: Array<{ id: string; title: string; impact: string; status: string }>;
+  contracts: Array<{ id: string; title: string; expiryDate: Date | null; status: string }>;
+}): ExceptionRow[] {
+  const now = Date.now();
+  const in90 = now + 90 * 86400000;
+  const rows: ExceptionRow[] = [];
+
+  for (const o of input.obligations.filter((x) => x.status === 'overdue').slice(0, 8)) {
+    rows.push({
+      id: `ob-${o.id}`,
+      type: 'obligation',
+      severity: 'critical',
+      title: o.title,
+      detail: `Overdue · due ${o.deadline.toISOString().slice(0, 10)} · ${o.assignedTo || 'Unassigned'}`,
+      href: `/compliance-tracking?obligation=${o.id}&status=non_compliant`,
+    });
+  }
+
+  for (const u of input.updates
+    .filter((x) => x.impact === 'high' && x.status !== 'implemented' && x.status !== 'reviewed')
+    .slice(0, 6)) {
+    rows.push({
+      id: `ru-${u.id}`,
+      type: 'regulatory',
+      severity: 'high',
+      title: u.title,
+      detail: `High-impact update · ${u.status.replace(/_/g, ' ')}`,
+      href: `/regulatory-updates?impact=high&update=${u.id}`,
+    });
+  }
+
+  for (const c of input.contracts
+    .filter((x) => {
+      const exp = x.expiryDate?.getTime();
+      return exp && exp >= now && exp <= in90 && !['expired', 'archived'].includes(x.status);
+    })
+    .slice(0, 6)) {
+    const days = Math.ceil((c.expiryDate!.getTime() - now) / 86400000);
+    rows.push({
+      id: `ct-${c.id}`,
+      type: 'contract',
+      severity: days <= 30 ? 'high' : 'medium',
+      title: c.title,
+      detail: `Expires in ${days} day${days === 1 ? '' : 's'}`,
+      href: `/contracts?contract=${c.id}`,
+    });
+  }
+
+  return rows.slice(0, 12);
+}
+
+/** Risk KRI strip — exposure vs tolerance (not goal progress). */
+export function computeRiskKris(input: {
+  obligations: Array<{ status: ObligationStatus; deadline: Date }>;
+  updates: Array<{ impact: string; status: string }>;
+  contracts: Array<{ expiryDate: Date | null; status: string }>;
+  evidenceCount: number;
+}): HeadlineKpi[] {
+  const compliance = computeAnalyticsCompliance(input.obligations);
+  const readiness = computeAuditReadiness(input.obligations, input.evidenceCount);
+  const now = Date.now();
+  const in90 = now + 90 * 86400000;
+  const highOpen = input.updates.filter(
+    (u) => u.impact === 'high' && u.status !== 'implemented' && u.status !== 'reviewed'
+  ).length;
+  const expiring = input.contracts.filter((c) => {
+    const exp = c.expiryDate?.getTime();
+    return exp && exp >= now && exp <= in90 && !['expired', 'archived'].includes(c.status);
+  }).length;
+
+  return [
+    {
+      id: 'kri-overdue',
+      label: 'KRI · Overdue',
+      value: compliance.overdueObligations,
+      displayValue: String(compliance.overdueObligations),
+      target: 0,
+      targetLabel: 'Tolerance 0',
+      trend: compliance.overdueObligations > 0 ? 'up' : 'stable',
+      invertTrend: true,
+      status: ragLowerIsBetter(compliance.overdueObligations, 0, 4),
+      href: '/compliance-tracking?status=non_compliant',
+    },
+    {
+      id: 'kri-high-impact',
+      label: 'KRI · High-Impact Open',
+      value: highOpen,
+      displayValue: String(highOpen),
+      target: 0,
+      targetLabel: 'Tolerance 0–2',
+      trend: highOpen > 0 ? 'up' : 'stable',
+      invertTrend: true,
+      status: ragLowerIsBetter(highOpen, 0, 2),
+      href: '/regulatory-updates?impact=high',
+    },
+    {
+      id: 'kri-expiring',
+      label: 'KRI · Contracts ≤90d',
+      value: expiring,
+      displayValue: String(expiring),
+      target: 0,
+      targetLabel: 'Watchlist',
+      trend: expiring > 3 ? 'up' : 'stable',
+      invertTrend: true,
+      status: ragLowerIsBetter(expiring, 2, 6),
+      href: '/contracts',
+    },
+    {
+      id: 'kri-audit-critical',
+      label: 'KRI · Audit Critical',
+      value: readiness.criticalIssues,
+      displayValue: String(readiness.criticalIssues),
+      target: 0,
+      targetLabel: 'Tolerance 0',
+      trend: readiness.criticalIssues > 0 ? 'up' : 'stable',
+      invertTrend: true,
+      status: ragLowerIsBetter(readiness.criticalIssues, 0, 2),
+      href: '/analytics?tab=audit',
+    },
+  ];
+}

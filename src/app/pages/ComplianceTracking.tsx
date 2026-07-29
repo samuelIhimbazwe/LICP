@@ -95,6 +95,21 @@ export function ComplianceTracking() {
         setSelectedObligation(obligationId);
       }
     }
+    const statusParam = searchParams.get('status');
+    if (statusParam) {
+      const mapped =
+        statusParam === 'overdue'
+          ? 'non_compliant'
+          : statusParam === 'warning'
+            ? 'partially_compliant'
+            : statusParam === 'pending'
+              ? 'not_assessed'
+              : statusParam;
+      if (['all', 'compliant', 'partially_compliant', 'non_compliant', 'not_assessed'].includes(mapped)) {
+        setSelectedStatus(mapped);
+        setActiveTab('obligations');
+      }
+    }
     const evidenceId = searchParams.get('evidence');
     if (evidenceId) {
       setSelectedEvidence(evidenceId);

@@ -4,6 +4,37 @@ export type ReportType = 'compliance' | 'regulatory' | 'contract' | 'team' | 'au
 export type ReportFormat = 'pdf' | 'excel' | 'csv' | 'json';
 export type ReportFrequency = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annually';
 export type MetricTrend = 'up' | 'down' | 'stable';
+export type RagStatus = 'green' | 'amber' | 'red' | 'neutral';
+
+export interface HeadlineKpi {
+  id: string;
+  label: string;
+  value: number;
+  displayValue: string;
+  target?: number;
+  targetLabel?: string;
+  delta?: number;
+  deltaLabel?: string;
+  trend: MetricTrend;
+  invertTrend?: boolean;
+  status: RagStatus;
+  href?: string;
+  sparkline?: number[];
+}
+
+export interface StatusMixItem {
+  name: string;
+  count: number;
+}
+
+export interface ExceptionRow {
+  id: string;
+  type: 'obligation' | 'regulatory' | 'contract' | 'audit';
+  severity: 'critical' | 'high' | 'medium';
+  title: string;
+  detail: string;
+  href: string;
+}
 
 export interface ComplianceMetrics {
   totalObligations: number;

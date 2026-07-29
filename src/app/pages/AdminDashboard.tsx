@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { StatGrid } from '../components/dashboard/StatCard';
 import { QuickActionsBar } from '../components/dashboard/QuickActionsBar';
-import { StatusBadge, CHART } from '../lib/statusBadges';
+import { StatusBadge, CHART, chartTooltipStyle } from '../lib/statusBadges';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
@@ -310,14 +310,35 @@ export function AdminDashboard() {
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={userActivityData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" tickFormatter={(v) => new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
-                  <YAxis />
-                  <Tooltip labelFormatter={(v) => new Date(v).toLocaleDateString()} />
-                  <Legend />
-                  <Area type="monotone" dataKey="logins" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} name="Logins" />
-                  <Area type="monotone" dataKey="documents" stackId="2" stroke="#10b981" fill="#10b981" fillOpacity={0.6} name="Documents" />
-                  <Area type="monotone" dataKey="searches" stackId="3" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.6} name="Searches" />
+                  <defs>
+                    <linearGradient id="activityLogins" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={CHART.primary} stopOpacity={0.28} />
+                      <stop offset="100%" stopColor={CHART.primary} stopOpacity={0.02} />
+                    </linearGradient>
+                    <linearGradient id="activityDocuments" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={CHART.secondary} stopOpacity={0.28} />
+                      <stop offset="100%" stopColor={CHART.secondary} stopOpacity={0.02} />
+                    </linearGradient>
+                    <linearGradient id="activitySearches" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={CHART.tertiary} stopOpacity={0.22} />
+                      <stop offset="100%" stopColor={CHART.tertiary} stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 11 }}
+                    tickFormatter={(v) => new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <Tooltip
+                    {...chartTooltipStyle()}
+                    labelFormatter={(v) => new Date(v).toLocaleDateString()}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+                  <Area type="monotone" dataKey="logins" stroke={CHART.primary} fill="url(#activityLogins)" strokeWidth={2} name="Logins" />
+                  <Area type="monotone" dataKey="documents" stroke={CHART.secondary} fill="url(#activityDocuments)" strokeWidth={2} name="Documents" />
+                  <Area type="monotone" dataKey="searches" stroke={CHART.tertiary} fill="url(#activitySearches)" strokeWidth={2} name="Searches" />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>

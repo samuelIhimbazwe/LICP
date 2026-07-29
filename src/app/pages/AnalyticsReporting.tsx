@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
@@ -14,11 +14,6 @@ import { Checkbox } from '../components/ui/checkbox';
 import {
   BarChart,
   Bar,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -27,6 +22,7 @@ import {
   ResponsiveContainer,
   AreaChart,
   Area,
+  Cell,
 } from 'recharts';
 import {
   TrendingUp,
@@ -44,20 +40,21 @@ import {
   Clock,
   Target,
   Activity,
-  PieChartIcon,
 } from 'lucide-react';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { useReports, type ReportPreview } from '../hooks/useReports';
 import { downloadCsv } from '../lib/api';
 import { toast } from 'sonner';
+import { KpiGrid } from '../components/dashboard/KpiCard';
+import { CHART, chartColors, chartTooltipStyle } from '../lib/statusBadges';
+import { PageHeader } from '../components/layout/PageHeader';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
-
 export function AnalyticsReporting() {
-  const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState('overview');
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
   const [highlightedReportId, setHighlightedReportId] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [reportName, setReportName] = useState('');
@@ -84,6 +81,11 @@ export function AnalyticsReporting() {
     regulatoryImpactTrends,
     auditReadinessMetrics,
     executiveSummary,
+    headlineKpis,
+    riskKris,
+    exceptions,
+    statusMix,
+    generatedAt,
   } = useAnalytics();
 
   const {
@@ -103,6 +105,8 @@ export function AnalyticsReporting() {
   } = useReports();
 
   useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab) setActiveTab(tab);
     const reportId = searchParams.get('report');
     if (!reportId) return;
     setActiveTab('scheduled');
@@ -112,6 +116,13 @@ export function AnalyticsReporting() {
     });
   }, [searchParams, generatedReports, customReports]);
 
+  const onTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const next = new URLSearchParams(searchParams);
+    if (tab === 'overview') next.delete('tab');
+    else next.set('tab', tab);
+    setSearchParams(next, { replace: true });
+  };
   const toggleSection = (id: string) => {
     setSelectedSections((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
   };
@@ -183,19 +194,26 @@ export function AnalyticsReporting() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Analytics & Reporting</h1>
-          <p className="text-slate-600 mt-1">Comprehensive legal operations analytics and custom reporting</p>
-        </div>
-        <Button onClick={handleExportCompliance}>
-          <Download className="mr-2 h-4 w-4" />
-          Export Dashboard
-        </Button>
-      </div>
+    <div className="app-page p-6">
+      <PageHeader
+        title="Analytics & Reporting"
+        description="Legal operations KPIs, trends, and custom reporting"
+        actions={
+          <div className="flex items-center gap-3">
+            {generatedAt && (
+              <p className="text-[12px] text-muted-foreground">
+                Updated {format(new Date(generatedAt), 'MMM d, HH:mm')}
+              </p>
+            )}
+            <Button onClick={handleExportCompliance}>
+              <Download className="mr-2 h-4 w-4" />
+              Export
+            </Button>
+          </div>
+        }
+      />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={onTabChange}>
         <ModuleTabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="compliance">Compliance</TabsTrigger>
@@ -209,119 +227,143 @@ export function AnalyticsReporting() {
           <TabsTrigger value="audit">Audit Readiness</TabsTrigger>
         </ModuleTabsList>
 
-        {/* Overview Tab */}
+        {/* Overview Tab — KPI strip + KRIs + charts + exceptions */}
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-slate-600">Compliance Score</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-2xl font-bold">{complianceMetrics.complianceScore}%</div>
-                    <div className="flex items-center gap-1 mt-1">
-                      {getTrendIcon(complianceMetrics.trend)}
-                      <span className="text-sm text-slate-600">vs last month</span>
-                    </div>
-                  </div>
-                  <Target className="h-8 w-8 text-brand" />
-                </div>
-                <Progress value={complianceMetrics.complianceScore} className="mt-3" />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-slate-600">Active Obligations</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-2xl font-bold">{complianceMetrics.totalObligations}</div>
-                    <div className="text-sm text-green-600 mt-1">
-                      {complianceMetrics.completedObligations} completed
-                    </div>
-                  </div>
-                  <FileCheck className="h-8 w-8 text-green-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-slate-600">Regulatory Updates</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-2xl font-bold">{regulatoryMetrics.totalUpdates}</div>
-                    <div className="text-sm text-orange-600 mt-1">
-                      {regulatoryMetrics.highImpactUpdates} high impact
-                    </div>
-                  </div>
-                  <AlertCircle className="h-8 w-8 text-orange-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-slate-600">Documents Processed</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-2xl font-bold">{documentMetrics.documentsProcessed}</div>
-                    <div className="text-sm text-slate-600 mt-1">
-                      Avg {documentMetrics.averageProcessingTime}h processing
-                    </div>
-                  </div>
-                  <FileText className="h-8 w-8 text-purple-600" />
-                </div>
-              </CardContent>
-            </Card>
+          <div>
+            <p className="mb-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+              Performance KPIs
+            </p>
+            <KpiGrid kpis={headlineKpis} />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+          <div>
+            <p className="mb-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+              Risk indicators (KRIs)
+            </p>
+            <KpiGrid kpis={riskKris} className="xl:grid-cols-4" />
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <Card className="shadow-none">
               <CardHeader>
-                <CardTitle>Compliance Trends (6 Months)</CardTitle>
-                <CardDescription>Obligation completion rates over time</CardDescription>
+                <CardTitle className="text-base">Compliance Score Trend</CardTitle>
+                <CardDescription>Completion rate over the last 6 months</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={obligationTrends}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="completionRate" stroke="#3b82f6" name="Completion Rate %" />
-                    <Line type="monotone" dataKey="overdue" stroke="#ef4444" name="Overdue" />
-                  </LineChart>
+                <ResponsiveContainer width="100%" height={280}>
+                  <AreaChart data={obligationTrends}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} />
+                    <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} domain={[0, 100]} />
+                    <Tooltip {...chartTooltipStyle()} />
+                    <Area
+                      type="monotone"
+                      dataKey="completionRate"
+                      name="Completion %"
+                      stroke={CHART.primary}
+                      fill={CHART.secondary}
+                      fillOpacity={0.25}
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="shadow-none">
               <CardHeader>
-                <CardTitle>Document Volume by Month</CardTitle>
-                <CardDescription>Monthly document processing trends</CardDescription>
+                <CardTitle className="text-base">Obligation Status Mix</CardTitle>
+                <CardDescription>Current portfolio by status</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={documentMetrics.monthlyVolume}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#10b981" name="Documents" />
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={statusMix} layout="vertical" margin={{ left: 8, right: 16 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} horizontal={false} />
+                    <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
+                    <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 11 }} />
+                    <Tooltip {...chartTooltipStyle()} />
+                    <Bar dataKey="count" name="Count" radius={[0, 4, 4, 0]}>
+                      {statusMix.map((entry) => (
+                        <Cell
+                          key={entry.name}
+                          fill={
+                            entry.name === 'Overdue'
+                              ? CHART.danger
+                              : entry.name === 'Compliant'
+                                ? CHART.primary
+                                : entry.name === 'Upcoming'
+                                  ? CHART.secondary
+                                  : CHART.tertiary
+                          }
+                        />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
+
+          <Card className="shadow-none">
+            <CardHeader>
+              <CardTitle className="text-base">Regulatory Impact Trend</CardTitle>
+              <CardDescription>High / medium / low impact updates by month</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={regulatoryImpactTrends}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} />
+                  <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                  <Tooltip {...chartTooltipStyle()} />
+                  <Legend />
+                  <Bar dataKey="highImpact" stackId="a" fill={CHART.danger} name="High" />
+                  <Bar dataKey="mediumImpact" stackId="a" fill={CHART.secondary} name="Medium" />
+                  <Bar dataKey="lowImpact" stackId="a" fill={CHART.tertiary} name="Low" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-none">
+            <CardHeader>
+              <CardTitle className="text-base">Exceptions requiring attention</CardTitle>
+              <CardDescription>Overdue obligations, high-impact updates, and contracts nearing expiry</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {exceptions.length === 0 ? (
+                <p className="py-6 text-center text-sm text-muted-foreground">No open exceptions.</p>
+              ) : (
+                <div className="divide-y divide-border">
+                  {exceptions.map((row) => (
+                    <button
+                      key={row.id}
+                      type="button"
+                      onClick={() => navigate(row.href)}
+                      className="flex w-full items-start gap-3 py-3 text-left transition-colors hover:bg-muted/40"
+                    >
+                      <span
+                        className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
+                          row.severity === 'critical'
+                            ? 'bg-red-500'
+                            : row.severity === 'high'
+                              ? 'bg-amber-500'
+                              : 'bg-muted-foreground/50'
+                        }`}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-foreground">{row.title}</p>
+                        <p className="text-[12px] text-muted-foreground">{row.detail}</p>
+                      </div>
+                      <Badge variant="outline" className="shrink-0 text-[10px] uppercase">
+                        {row.type}
+                      </Badge>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Compliance Analytics Tab */}
@@ -367,8 +409,8 @@ export function AnalyticsReporting() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Area type="monotone" dataKey="completed" stackId="1" stroke="#10b981" fill="#10b981" name="Completed" />
-                  <Area type="monotone" dataKey="overdue" stackId="1" stroke="#ef4444" fill="#ef4444" name="Overdue" />
+                  <Area type="monotone" dataKey="completed" stackId="1" stroke={CHART.primary} fill={CHART.primary} fillOpacity={0.35} name="Completed" />
+                  <Area type="monotone" dataKey="overdue" stackId="1" stroke={CHART.danger} fill={CHART.danger} fillOpacity={0.45} name="Overdue" />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
@@ -456,9 +498,9 @@ export function AnalyticsReporting() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="highImpact" fill="#ef4444" name="High Impact" />
-                  <Bar dataKey="mediumImpact" fill="#f59e0b" name="Medium Impact" />
-                  <Bar dataKey="lowImpact" fill="#10b981" name="Low Impact" />
+                  <Bar dataKey="highImpact" fill={CHART.danger} name="High Impact" />
+                  <Bar dataKey="mediumImpact" fill={CHART.secondary} name="Medium Impact" />
+                  <Bar dataKey="lowImpact" fill={CHART.tertiary} name="Low Impact" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -468,56 +510,48 @@ export function AnalyticsReporting() {
         {/* Document Metrics Tab */}
         <TabsContent value="documents" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+            <Card className="shadow-none">
               <CardHeader>
                 <CardTitle>Documents by Type</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={documentMetrics.documentsByType}
-                      dataKey="count"
-                      nameKey="type"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      label
-                    >
-                      {documentMetrics.documentsByType.map((entry, index) => (
-                        <Cell key={`cell-${entry.type}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
+                  <BarChart
+                    data={[...documentMetrics.documentsByType].sort((a, b) => b.count - a.count)}
+                    layout="vertical"
+                    margin={{ left: 8, right: 16 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
+                    <YAxis type="category" dataKey="type" width={110} tick={{ fontSize: 11 }} />
+                    <Tooltip {...chartTooltipStyle()} />
+                    <Bar dataKey="count" name="Count" fill={CHART.primary} radius={[0, 4, 4, 0]} />
+                  </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="shadow-none">
               <CardHeader>
                 <CardTitle>Documents by Status</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={documentMetrics.documentsByStatus}
-                      dataKey="count"
-                      nameKey="status"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      label
-                    >
+                  <BarChart
+                    data={[...documentMetrics.documentsByStatus].sort((a, b) => b.count - a.count)}
+                    layout="vertical"
+                    margin={{ left: 8, right: 16 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
+                    <YAxis type="category" dataKey="status" width={100} tick={{ fontSize: 11 }} />
+                    <Tooltip {...chartTooltipStyle()} />
+                    <Bar dataKey="count" name="Count" radius={[0, 4, 4, 0]}>
                       {documentMetrics.documentsByStatus.map((entry, index) => (
-                        <Cell key={`cell-${entry.status}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={entry.status} fill={chartColors()[index % chartColors().length]} />
                       ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
@@ -1246,110 +1280,123 @@ export function AnalyticsReporting() {
         {/* Executive Summary Tab */}
         <TabsContent value="executive" className="space-y-6">
           {!executiveSummary ? (
-            <Card>
-              <CardContent className="py-8 text-center text-slate-600">
+            <Card className="shadow-none">
+              <CardContent className="py-8 text-center text-muted-foreground">
                 Executive summary is available to managers and administrators.
               </CardContent>
             </Card>
           ) : (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
+            <>
+              <div className="flex items-end justify-between gap-4">
                 <div>
-                  <CardTitle>Executive Summary</CardTitle>
-                  <CardDescription>Period: {executiveSummary.period}</CardDescription>
+                  <h2 className="text-lg font-semibold text-foreground">Executive summary</h2>
+                  <p className="text-sm text-muted-foreground">Period: {executiveSummary.period}</p>
                 </div>
-                <Button onClick={handleExportCompliance}>
+                <Button variant="outline" onClick={handleExportCompliance}>
                   <Download className="mr-2 h-4 w-4" />
-                  Export Summary
+                  Export
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">Compliance Score</CardTitle>
+
+              <KpiGrid
+                kpis={headlineKpis.filter((k) =>
+                  ['compliance-score', 'overdue', 'high-impact', 'audit-readiness'].includes(k.id)
+                )}
+                className="xl:grid-cols-4"
+              />
+
+              <Card className="shadow-none">
+                <CardHeader>
+                  <CardTitle className="text-base">Compliance trajectory</CardTitle>
+                  <CardDescription>Strategic view of completion rate</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={240}>
+                    <AreaChart data={obligationTrends}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} />
+                      <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
+                      <Tooltip {...chartTooltipStyle()} />
+                      <Area
+                        type="monotone"
+                        dataKey="completionRate"
+                        name="Completion %"
+                        stroke={CHART.primary}
+                        fill={CHART.secondary}
+                        fillOpacity={0.25}
+                        strokeWidth={2}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              <div className="grid gap-6 lg:grid-cols-2">
+                <Card className="shadow-none">
+                  <CardHeader>
+                    <CardTitle className="text-base">Highlights</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{executiveSummary.keyMetrics.complianceScore}%</div>
-                    <div className="flex items-center gap-1 mt-1">
-                      {getTrendIcon(executiveSummary.trends.compliance)}
+                    <ul className="space-y-2">
+                      {executiveSummary.highlights.map((highlight, index) => (
+                        <li key={index} className="flex items-start gap-2 text-sm">
+                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                          <span>{highlight}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+                <Card className="shadow-none">
+                  <CardHeader>
+                    <CardTitle className="text-base">Recommendations</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2">
+                      {executiveSummary.recommendations.map((recommendation, index) => (
+                        <li key={index} className="flex items-start gap-2 text-sm">
+                          <Target className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                          <span>{recommendation}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card className="shadow-none">
+                <CardHeader>
+                  <CardTitle className="text-base">Exceptions board</CardTitle>
+                  <CardDescription>Items that need GC / leadership attention</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {exceptions.length === 0 ? (
+                    <p className="py-4 text-sm text-muted-foreground">No critical exceptions this period.</p>
+                  ) : (
+                    <div className="divide-y divide-border">
+                      {exceptions.map((row) => (
+                        <button
+                          key={row.id}
+                          type="button"
+                          onClick={() => navigate(row.href)}
+                          className="flex w-full items-start gap-3 py-3 text-left hover:bg-muted/40"
+                        >
+                          <AlertCircle
+                            className={`mt-0.5 h-4 w-4 shrink-0 ${
+                              row.severity === 'critical' ? 'text-red-600' : 'text-amber-600'
+                            }`}
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium">{row.title}</p>
+                            <p className="text-[12px] text-muted-foreground">{row.detail}</p>
+                          </div>
+                        </button>
+                      ))}
                     </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">Active Obligations</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{executiveSummary.keyMetrics.activeObligations}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">Critical Alerts</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-red-600">{executiveSummary.keyMetrics.criticalAlerts}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">Document Volume</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{executiveSummary.keyMetrics.documentVolume}</div>
-                    <div className="flex items-center gap-1 mt-1">
-                      {getTrendIcon(executiveSummary.trends.documents)}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Key Highlights</h3>
-                <ul className="space-y-2">
-                  {executiveSummary.highlights.map((highlight, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>{highlight}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Areas of Concern</h3>
-                <ul className="space-y-2">
-                  {executiveSummary.concerns.map((concern, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-                      <span>{concern}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Recommendations</h3>
-                <ul className="space-y-2">
-                  {executiveSummary.recommendations.map((recommendation, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <Target className="h-5 w-5 text-brand mt-0.5 flex-shrink-0" />
-                      <span>{recommendation}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
+                  )}
+                </CardContent>
+              </Card>
+            </>
           )}
         </TabsContent>
 

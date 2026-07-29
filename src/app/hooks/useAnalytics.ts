@@ -5,10 +5,13 @@ import type {
   AuditReadinessMetrics,
   ComplianceMetrics,
   DocumentMetrics,
+  ExceptionRow,
   ExecutiveSummary,
+  HeadlineKpi,
   ObligationTrend,
   RegulatoryImpactTrend,
   RegulatoryMetrics,
+  StatusMixItem,
   TeamPerformanceMetrics,
 } from '../types/analytics';
 
@@ -24,6 +27,11 @@ export function useAnalytics() {
   const [regulatoryImpactTrends, setRegulatoryImpactTrends] = useState<RegulatoryImpactTrend[]>([]);
   const [auditReadinessMetrics, setAuditReadinessMetrics] = useState<AuditReadinessMetrics | null>(null);
   const [executiveSummary, setExecutiveSummary] = useState<ExecutiveSummary | null>(null);
+  const [headlineKpis, setHeadlineKpis] = useState<HeadlineKpi[]>([]);
+  const [riskKris, setRiskKris] = useState<HeadlineKpi[]>([]);
+  const [exceptions, setExceptions] = useState<ExceptionRow[]>([]);
+  const [statusMix, setStatusMix] = useState<StatusMixItem[]>([]);
+  const [generatedAt, setGeneratedAt] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (authLoading) return;
@@ -43,6 +51,11 @@ export function useAnalytics() {
         executiveSummary?: ExecutiveSummary;
         auditReadiness?: AuditReadinessMetrics;
         team?: TeamPerformanceMetrics[];
+        headlineKpis?: HeadlineKpi[];
+        riskKris?: HeadlineKpi[];
+        exceptions?: ExceptionRow[];
+        statusMix?: StatusMixItem[];
+        generatedAt?: string;
       }>('/analytics/overview');
 
       if (overview) {
@@ -54,6 +67,11 @@ export function useAnalytics() {
         setExecutiveSummary(overview.executiveSummary ?? null);
         setAuditReadinessMetrics(overview.auditReadiness ?? null);
         setTeamPerformance(overview.team ?? []);
+        setHeadlineKpis(overview.headlineKpis ?? []);
+        setRiskKris(overview.riskKris ?? []);
+        setExceptions(overview.exceptions ?? []);
+        setStatusMix(overview.statusMix ?? []);
+        setGeneratedAt(overview.generatedAt ?? null);
       }
       setError(null);
     } catch (err) {
@@ -78,6 +96,11 @@ export function useAnalytics() {
     regulatoryImpactTrends,
     auditReadinessMetrics,
     executiveSummary,
+    headlineKpis,
+    riskKris,
+    exceptions,
+    statusMix,
+    generatedAt,
     refresh: load,
   };
 }

@@ -67,23 +67,51 @@ export function PriorityBadge({ priority }: { priority: string }) {
   return <StatusBadge status={priority} label={formatLabel(priority)} />;
 }
 
-/** Neutral chart palette for Recharts — charcoal + gold */
+/** Theme-aware chart palette — reads CSS variables from active option. */
 export const CHART = {
-  primary: '#1a1a1a',
-  secondary: '#a68b67',
-  tertiary: '#78716c',
-  muted: '#d6cfc7',
-  grid: '#f0ebe4',
-  success: '#059669',
-  warning: '#d97706',
-  danger: '#b91c1c',
+  get primary() {
+    return cssVar('--chart-1', '#1a1a1a');
+  },
+  get secondary() {
+    return cssVar('--chart-2', '#a68b67');
+  },
+  get tertiary() {
+    return cssVar('--chart-3', '#78716c');
+  },
+  get muted() {
+    return cssVar('--chart-4', '#d6cfc7');
+  },
+  get grid() {
+    return cssVar('--border', '#e4e4e7');
+  },
+  get success() {
+    return cssVar('--chart-4', '#059669');
+  },
+  get warning() {
+    return cssVar('--chart-2', '#d97706');
+  },
+  get danger() {
+    return cssVar('--chart-5', '#b91c1c');
+  },
 } as const;
+
+function cssVar(name: string, fallback: string) {
+  if (typeof window === 'undefined') return fallback;
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fallback;
+}
+
+export function chartColors() {
+  return [CHART.primary, CHART.secondary, CHART.tertiary, CHART.muted, CHART.danger];
+}
 
 export function chartTooltipStyle() {
   return {
     contentStyle: {
       borderRadius: '6px',
-      border: '1px solid #e4e4e7',
+      border: `1px solid ${cssVar('--border', '#e4e4e7')}`,
+      background: cssVar('--card', '#ffffff'),
+      color: cssVar('--foreground', '#1a1a1a'),
       boxShadow: 'none',
       fontSize: '12px',
     },

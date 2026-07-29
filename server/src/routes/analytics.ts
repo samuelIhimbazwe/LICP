@@ -5,10 +5,14 @@ import {
   computeAnalyticsCompliance,
   computeAuditReadiness,
   computeDocumentMetrics,
+  computeExceptions,
   computeExecutiveSummary,
+  computeHeadlineKpis,
   computeObligationTrends,
   computeRegulatoryImpactTrends,
   computeRegulatoryMetrics,
+  computeRiskKris,
+  computeStatusMix,
   computeTeamPerformance,
 } from '../lib/analytics.js';
 import { computeComplianceSummary } from '../lib/compliance.js';
@@ -140,5 +144,19 @@ analyticsRouter.get('/overview', async (req: AuthRequest, res) => {
       : null,
     auditReadiness: computeAuditReadiness(data.obligations, data.evidenceCount),
     team: computeTeamPerformance(data.users, data.obligations, data.activities),
+    headlineKpis: computeHeadlineKpis(data.obligations, data.updates, data.evidenceCount),
+    riskKris: computeRiskKris({
+      obligations: data.obligations,
+      updates: data.updates,
+      contracts: data.contracts,
+      evidenceCount: data.evidenceCount,
+    }),
+    exceptions: computeExceptions({
+      obligations: data.obligations,
+      updates: data.updates,
+      contracts: data.contracts,
+    }),
+    statusMix: computeStatusMix(compliance),
+    generatedAt: new Date().toISOString(),
   });
 });
