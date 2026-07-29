@@ -1,6 +1,6 @@
 import { writeFileSync } from 'fs';
-import { buildReportDocument, exportReportDocument, ALL_REPORT_SECTION_IDS } from '../lib/report-engine.ts';
-import { prisma } from '../lib/prisma.ts';
+import { buildReportDocument, exportReportDocument, ALL_REPORT_SECTION_IDS } from '../lib/report-engine.js';
+import { prisma } from '../lib/prisma.js';
 
 async function main() {
   const org = await prisma.organization.findFirst();

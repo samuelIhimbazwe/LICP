@@ -9,7 +9,7 @@ import {
   type UserPermissions,
 } from '../lib/permissions.js';
 import { authenticate, requireAdmin, requireModule, type AuthRequest } from '../middleware/auth.js';
-import type { UserRole } from '@prisma/client';
+import type { Prisma, UserRole } from '@prisma/client';
 
 export const usersRouter = Router();
 usersRouter.use(authenticate);
@@ -127,7 +127,7 @@ usersRouter.post('/org-structure', requireAdmin, async (req: AuthRequest, res) =
 
   await prisma.organization.update({
     where: { id: org.id },
-    data: { settings: { ...settings, extraOrgUnits: extraUnits } },
+    data: { settings: { ...settings, extraOrgUnits: extraUnits } as Prisma.InputJsonValue },
   });
 
   res.status(201).json({ unit });
@@ -215,12 +215,12 @@ usersRouter.put('/permissions-matrix/:role', requireAdmin, async (req: AuthReque
 
   await prisma.organization.update({
     where: { id: orgId },
-    data: { settings: { ...settings, rolePermissionOverrides: overrides } },
+    data: { settings: { ...settings, rolePermissionOverrides: overrides } as Prisma.InputJsonValue },
   });
 
   await prisma.user.updateMany({
     where: { organizationId: orgId, role },
-    data: { permissions },
+    data: { permissions: permissions as unknown as Prisma.InputJsonValue },
   });
 
   await writeAuditLog({

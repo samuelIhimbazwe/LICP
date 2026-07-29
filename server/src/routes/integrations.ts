@@ -7,6 +7,7 @@ import { syncDmsIntegration, syncErpIntegration, syncRegulatoryIntegration } fro
 import { probeIntegrationEndpoint } from '../lib/integration-http.js';
 import { notifyOrganizationUsers } from '../lib/notifications.js';
 import { authenticate, requireAdmin, requireModule, type AuthRequest } from '../middleware/auth.js';
+import type { Prisma } from '@prisma/client';
 
 export const integrationsRouter = Router();
 integrationsRouter.use(authenticate, requireModule('integrations', 'view'));
@@ -93,7 +94,7 @@ integrationsRouter.post('/', authenticate, requireAdmin, async (req: AuthRequest
       type: body.type,
       status: 'configuring',
       isActive: false,
-      config,
+      config: config as Prisma.InputJsonValue,
     },
   });
 
@@ -223,7 +224,7 @@ integrationsRouter.patch('/:id', authenticate, requireAdmin, async (req: AuthReq
     data: {
       status: body.status ?? item.status,
       isActive: body.isActive ?? item.isActive,
-      config: nextConfig,
+      config: nextConfig as Prisma.InputJsonValue,
     },
   });
 
@@ -369,7 +370,6 @@ integrationsRouter.post('/:id/test', authenticate, requireAdmin, async (req: Aut
       message: 'Connection test failed. Review credentials.',
       priority: 'high',
       linkUrl: '/integrations',
-      notificationTypeKey: 'systemAnnouncements',
     });
   } else {
     await prisma.integration.update({

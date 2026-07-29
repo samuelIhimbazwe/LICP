@@ -1013,10 +1013,11 @@ export function compareDocuments(docA: string, docB: string) {
 export async function runComplianceCheck(orgId: string, query: string) {
   let obligations = await searchObligations(orgId, query);
   if (!obligations.length) {
-    obligations = await prisma.complianceObligation.findMany({
+    const fallback = await prisma.complianceObligation.findMany({
       where: { organizationId: orgId },
       take: 8,
     });
+    obligations = fallback.map((o) => ({ ...o, relevance: 0 }));
   }
   const docs = await searchKnowledge(orgId, query);
   const items = obligations.map((o) => {

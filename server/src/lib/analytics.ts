@@ -305,7 +305,14 @@ function deltaTrend(delta: number): 'up' | 'down' | 'stable' {
 
 /** World-class headline KPIs for Analytics Overview (targets + MoM delta + RAG). */
 export function computeHeadlineKpis(
-  obligations: Array<{ status: ObligationStatus; deadline: Date; updatedAt: Date; createdAt: Date }>,
+  obligations: Array<{
+    status: ObligationStatus;
+    title: string;
+    department: string | null;
+    deadline: Date;
+    updatedAt: Date;
+    createdAt: Date;
+  }>,
   updates: Array<{ impact: string; status: string; publishedAt: Date }>,
   evidenceCount: number
 ): HeadlineKpi[] {
@@ -500,7 +507,13 @@ export function computeExceptions(input: {
 
 /** Risk KRI strip — exposure vs tolerance (not goal progress). */
 export function computeRiskKris(input: {
-  obligations: Array<{ status: ObligationStatus; deadline: Date }>;
+  obligations: Array<{
+    status: ObligationStatus;
+    title: string;
+    department: string | null;
+    deadline: Date;
+    updatedAt: Date;
+  }>;
   updates: Array<{ impact: string; status: string }>;
   contracts: Array<{ expiryDate: Date | null; status: string }>;
   evidenceCount: number;

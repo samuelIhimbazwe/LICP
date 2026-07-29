@@ -24,7 +24,6 @@ export async function runContractExpiryAlerts(organizationId: string) {
       message: `Contract "${contract.title}" expires in ${days ?? '?'} days.`,
       priority: days !== null && days <= 7 ? 'high' : 'medium',
       linkUrl: `/contracts?highlight=${contract.id}`,
-      notificationTypeKey: 'contractExpiry',
     });
     notified += count;
   }

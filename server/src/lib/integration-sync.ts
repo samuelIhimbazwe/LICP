@@ -85,7 +85,6 @@ export async function syncRegulatoryIntegration(
       message: item.title,
       priority: 'medium',
       linkUrl: '/regulatory-updates',
-      notificationTypeKey: 'regulatoryUpdates',
     });
   }
 

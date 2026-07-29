@@ -119,7 +119,7 @@ async function runM03(sarah: Session, admin: Session, lp: Session, anon: Session
         method: 'PATCH',
         body: JSON.stringify({ content: 'Updated HR policy note' }),
       })
-    : { res: { ok: false } };
+    : { res: { ok: false, status: 0 } };
   record(
     'UAT-M03-006',
     'M03',
@@ -152,7 +152,7 @@ async function runM03(sarah: Session, admin: Session, lp: Session, anon: Session
   const linkedId = citationLinks.find((c) => c.documentId)?.documentId;
   const backLinks = linkedId
     ? await sarah.request(`/knowledge/documents/${linkedId}/referenced-by`)
-    : { res: { ok: false }, data: {} };
+    : { res: { ok: false, status: 0 }, data: {} };
   const refBy = ((backLinks.data as { referencedBy?: unknown[] }).referencedBy ?? []).length;
   record(
     'UAT-M03-008',
@@ -256,7 +256,7 @@ async function runM06(lp: Session, sarah: Session, admin: Session, emily: Sessio
   const newFolderId = (newFolder.data as { folder?: { id: string } }).folder?.id;
   const moved = moveTarget && newFolderId
     ? await lp.request(`/contracts/${moveTarget.id}`, { method: 'PATCH', body: JSON.stringify({ folderId: newFolderId }) })
-    : { res: { ok: false } };
+    : { res: { ok: false, status: 0 } };
   record(
     'UAT-M06-001',
     'M06',
@@ -272,7 +272,7 @@ async function runM06(lp: Session, sarah: Session, admin: Session, emily: Sessio
         method: 'POST',
         body: JSON.stringify({ counterparty: 'UAT Counterparty Ltd' }),
       })
-    : { res: { ok: false }, data: {} };
+    : { res: { ok: false, status: 0 }, data: {} };
   const fromContract = (fromTemplate.data as { contract?: { type: string; status: string } }).contract;
   record(
     'UAT-M06-002',
@@ -310,7 +310,7 @@ async function runM06(lp: Session, sarah: Session, admin: Session, emily: Sessio
           tags: ['uat', 'draft'],
         }),
       })
-    : { res: { ok: false } };
+    : { res: { ok: false, status: 0 } };
   const acmeSearch = await lp.request('/contracts?search=TechCorp');
   const acmeHits = ((acmeSearch.data as { contracts?: unknown[] }).contracts ?? []).length;
   const draftFilter = await lp.request('/contracts?status=draft');
@@ -325,7 +325,7 @@ async function runM06(lp: Session, sarah: Session, admin: Session, emily: Sessio
   const versionDoc = (fromTemplate.data as { contract?: { id: string } }).contract?.id ?? (draft as { id?: string })?.id;
   const checkout1 = versionDoc
     ? await lp.request(`/contracts/${versionDoc}/checkout`, { method: 'POST', body: '{}' })
-    : { res: { ok: false }, data: {} };
+    : { res: { ok: false, status: 0 }, data: {} };
   const checkout2 = versionDoc
     ? await sarah.request(`/contracts/${versionDoc}/checkout`, { method: 'POST', body: '{}' })
     : { res: { status: 0 } };
@@ -334,8 +334,8 @@ async function runM06(lp: Session, sarah: Session, admin: Session, emily: Sessio
         method: 'POST',
         body: JSON.stringify({ changeNotes: 'UAT v2 check-in' }),
       })
-    : { res: { ok: false }, data: {} };
-  const vers = versionDoc ? await lp.request(`/contracts/${versionDoc}/versions`) : { res: { ok: false }, data: {} };
+    : { res: { ok: false, status: 0 }, data: {} };
+  const vers = versionDoc ? await lp.request(`/contracts/${versionDoc}/versions`) : { res: { ok: false, status: 0 }, data: {} };
   const versionCount = ((vers.data as { versions?: unknown[] }).versions ?? []).length;
   record(
     'UAT-M06-005',
@@ -350,7 +350,7 @@ async function runM06(lp: Session, sarah: Session, admin: Session, emily: Sessio
         method: 'POST',
         body: JSON.stringify({ approverName: 'Sarah Johnson' }),
       })
-    : { res: { ok: false }, data: {} };
+    : { res: { ok: false, status: 0 }, data: {} };
   const approvalsList = await sarah.request('/contracts/approvals');
   const pending = ((approvalsList.data as { approvals?: { id: string; status: string }[] }).approvals ?? []).find(
     (a) => a.status === 'pending'
@@ -360,7 +360,7 @@ async function runM06(lp: Session, sarah: Session, admin: Session, emily: Sessio
         method: 'PATCH',
         body: JSON.stringify({ status: 'approved', comment: 'Looks good' }),
       })
-    : { res: { ok: false } };
+    : { res: { ok: false, status: 0 } };
   record(
     'UAT-M06-006',
     'M06',
@@ -410,11 +410,11 @@ async function runM06(lp: Session, sarah: Session, admin: Session, emily: Sessio
         method: 'POST',
         body: JSON.stringify({ targetUserId: manager.id, permission: 'view' }),
       })
-    : { res: { ok: false }, data: {} };
+    : { res: { ok: false, status: 0 }, data: {} };
   const shareId = (internalShare.data as { share?: { id: string } }).share?.id;
   const permUpdate = shareId
     ? await lp.request(`/contracts/shares/${shareId}`, { method: 'PATCH', body: JSON.stringify({ permission: 'edit' }) })
-    : { res: { ok: false } };
+    : { res: { ok: false, status: 0 } };
   if (shareId) await lp.request(`/contracts/shares/${shareId}`, { method: 'DELETE' });
   record(
     'UAT-M06-010',
@@ -428,9 +428,9 @@ async function runM06(lp: Session, sarah: Session, admin: Session, emily: Sessio
         method: 'POST',
         body: JSON.stringify({ external: true, expiresInDays: 7, permission: 'view' }),
       })
-    : { res: { ok: false }, data: {} };
+    : { res: { ok: false, status: 0 }, data: {} };
   const token = (extShare.data as { share?: { token: string } }).share?.token;
-  const publicView = token ? await anon.request(`/public/share/contracts/${token}`) : { res: { ok: false }, data: {} };
+  const publicView = token ? await anon.request(`/public/share/contracts/${token}`) : { res: { ok: false, status: 0 }, data: {} };
   record(
     'UAT-M06-011',
     'M06',
@@ -444,7 +444,7 @@ async function runM06(lp: Session, sarah: Session, admin: Session, emily: Sessio
         method: 'POST',
         body: JSON.stringify({ signerEmail: 'signer@example.com' }),
       })
-    : { res: { ok: false }, data: {} };
+    : { res: { ok: false, status: 0 }, data: {} };
   const signed = (sign.data as { contract?: { status: string; signedAt?: string } }).contract;
   record(
     'UAT-M06-012',
