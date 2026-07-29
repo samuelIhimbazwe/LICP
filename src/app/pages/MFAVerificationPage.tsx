@@ -10,6 +10,9 @@ import { Label } from '../components/ui/label';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '../components/ui/input-otp';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
+const demoCodeEnabled =
+  import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEMO_LOGIN === 'true';
+
 export function MFAVerificationPage() {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -23,7 +26,7 @@ export function MFAVerificationPage() {
   const [devCode, setDevCode] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!import.meta.env.DEV) return;
+    if (!demoCodeEnabled) return;
     const loadDevCode = async () => {
       try {
         const data = await fetch(`${API_BASE}/auth/mfa/dev-code`).then((r) => r.json());
@@ -139,9 +142,9 @@ export function MFAVerificationPage() {
           </Label>
         </div>
 
-        {import.meta.env.DEV && devCode && (
+        {demoCodeEnabled && devCode && (
           <p className="rounded-md border border-border bg-muted/50 px-3 py-2 text-center text-[12px] text-muted-foreground">
-            Dev code: <code className="font-mono text-foreground">{devCode}</code>
+            Demo code: <code className="font-mono text-foreground">{devCode}</code>
           </p>
         )}
 
