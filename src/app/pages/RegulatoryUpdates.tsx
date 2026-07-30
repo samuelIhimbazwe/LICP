@@ -751,10 +751,10 @@ export function RegulatoryUpdates() {
                             </div>
                             <div className="grid gap-4 md:grid-cols-2">
                               <div className="space-y-2">
-                                <Label>Estimated Cost</Label>
+                                <Label>Estimated Cost (RWF)</Label>
                                 <Input
                                   type="number"
-                                  placeholder="0.00"
+                                  placeholder="0"
                                   value={assessForm.cost}
                                   onChange={(e) => setAssessForm((f) => ({ ...f, cost: e.target.value }))}
                                 />
@@ -892,7 +892,7 @@ export function RegulatoryUpdates() {
                         {assessment.estimatedCost && (
                           <div>
                             <p className="font-medium">Estimated Cost</p>
-                            <p className="text-slate-600">${assessment.estimatedCost.toLocaleString()}</p>
+                            <p className="text-slate-600">RWF {assessment.estimatedCost.toLocaleString()}</p>
                           </div>
                         )}
                         {assessment.estimatedEffort && (
